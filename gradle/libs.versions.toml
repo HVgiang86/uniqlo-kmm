@@ -5,6 +5,7 @@ compose = "1.7.0-alpha03"
 agp = "8.5.2"
 androidx-activityCompose = "1.9.1"
 androidx-uiTest = "1.6.8"
+ktlintVersion = "0.0.26"
 voyager = "1.1.0-beta02"
 coil = "3.0.0-alpha10"
 napier = "2.7.1"
@@ -17,12 +18,15 @@ kotlinx-serialization = "1.7.1"
 kotlinx-datetime = "0.6.0"
 multiplatformSettings = "1.1.1"
 koin = "4.0.0-RC1"
+ktlint = "0.51.0-FINAL"
+kotlinter = "4.4.1"
 
 [libraries]
 
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-uitest-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-uitest-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
+rules-ktlint = { module = "com.twitter.compose.rules:ktlint", version.ref = "ktlintVersion" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 coil = { module = "io.coil-kt.coil3:coil-compose-core", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
@@ -45,6 +49,8 @@ multiplatformSettings = { module = "com.russhwolf:multiplatform-settings", versi
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 
+ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
+
 [plugins]
 
 multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -53,3 +59,4 @@ compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }

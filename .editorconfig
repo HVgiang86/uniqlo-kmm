@@ -1,0 +1,8 @@
+[*.{kt,kts}]
+indent_size = 4
+insert_final_newline = true
+max_line_length = 160
+twitter_compose_allowed_composable_function_names = .*Presenter,.*SomethingElse,.*Appearance,.*Preview,.*Theme
+twitter_compose_preview_public_only_if_params = false
+twitter_compose_content_emitters = MyComposable,MyOtherComposable
+no-wildcard-imports = false
