@@ -7,12 +7,13 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
 plugins {
     alias(libs.plugins.multiplatform)
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.kotlinNativeCocoapods)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose)
     alias(libs.plugins.android.application)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.kotlinter)
-
 }
 
 buildscript {
@@ -33,30 +34,22 @@ kotlin {
             }
         }
         // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+        @OptIn(ExperimentalKotlinGradlePluginApi::class) instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
-    jvm()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
-    js {
-        browser()
-        binaries.executable()
-    }
-
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach {
-        it.binaries.framework {
-            baseName = "ComposeApp"
+    cocoapods {
+        ios.deploymentTarget = "14.1"
+        version = "1.0.0"
+        summary = "Shared module of FindTravelNow"
+        homepage = "https://github.com/mirzemehdi/FindTravelNow-KMM/"
+        framework {
+            baseName = "shared"
             isStatic = true
+            export(libs.kmpNotifier)
         }
     }
 
@@ -68,6 +61,8 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.voyager.navigator)
+            implementation(libs.bundles.voyager)
+            implementation(libs.bundles.ktor)
             implementation(libs.coil)
             implementation(libs.coil.network.ktor)
             implementation(libs.napier)
@@ -78,14 +73,15 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.multiplatformSettings)
+            implementation(libs.multiplatformSettings.noargs)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
-            @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
+            @OptIn(ExperimentalComposeLibrary::class) implementation(compose.uiTest)
             implementation(libs.kotlinx.coroutines.test)
         }
 
@@ -94,17 +90,7 @@ kotlin {
             implementation(libs.androidx.activityCompose)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
-        }
-
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            implementation(libs.ktor.client.okhttp)
-        }
-
-        jsMain.dependencies {
-            implementation(compose.html.core)
-            implementation(libs.ktor.client.js)
+            api(libs.koin.android)
         }
 
         iosMain.dependencies {
@@ -128,8 +114,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     // https://developer.android.com/studio/test/gradle-managed-devices
-    @Suppress("UnstableApiUsage")
-    testOptions {
+    @Suppress("UnstableApiUsage") testOptions {
         managedDevices.devices {
             maybeCreate<ManagedVirtualDevice>("pixel5").apply {
                 device = "Pixel 5"
@@ -146,6 +131,8 @@ android {
 
 // https://developer.android.com/develop/ui/compose/testing#setup
 dependencies {
+    implementation(libs.annotations)
+    implementation(libs.annotations)
     androidTestImplementation(libs.androidx.uitest.junit4)
     debugImplementation(libs.androidx.uitest.testManifest)
     // temporary fix: https://youtrack.jetbrains.com/issue/CMP-5864
@@ -169,4 +156,7 @@ compose.desktop {
 buildConfig {
     // BuildConfig configuration here.
     // https://github.com/gmazzo/gradle-buildconfig-plugin#usage-in-kts
+    buildConfigField("APP_NAME", project.name)
+    buildConfigField("APP_VERSION", provider { "\"${project.version}\"" })
+    buildConfigField("DEBUG", true)
 }
