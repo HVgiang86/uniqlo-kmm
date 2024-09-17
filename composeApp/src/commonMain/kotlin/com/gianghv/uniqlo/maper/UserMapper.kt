@@ -19,3 +19,4 @@ class UserMapper : DataMapper<LoginResponse, User>() {
         )
     }
 }
+

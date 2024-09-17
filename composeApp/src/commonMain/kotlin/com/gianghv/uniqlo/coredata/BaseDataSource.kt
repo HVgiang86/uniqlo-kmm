@@ -7,6 +7,8 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
@@ -34,6 +36,29 @@ abstract class BaseDataSource : KoinComponent {
                 println("[DEBUG] $result")
 
                 return Result.Success(result)
+            } else {
+                return Result.Error(Exception(response.message))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return Result.Error(e)
+        }
+    }
+
+    protected suspend fun returnIfSuccess(
+        block: suspend () -> BaseResponse<*>,
+    ): Result<Boolean> {
+        try {
+            val response = block.invoke()
+            if (response.code in 200..299) {
+                if (!response.isSuccessful()) {
+                    return Result.Error(Exception(response.message))
+                }
+
+                val result = response.getSuccessfulData()
+                println("[DEBUG] $result")
+
+                return Result.Success(true)
             } else {
                 return Result.Error(Exception(response.message))
             }
@@ -78,7 +103,8 @@ abstract class BaseDataSource : KoinComponent {
             } else {
                 return Result.Error(Exception(response.message))
             }
-        } catch (e: JsonConvertException) {
+        }
+        catch (e: JsonConvertException) {
             if (statusCode != null && message != null) {
                 return Result.Error(Exception("[$statusCode] $message"))
             }
@@ -97,28 +123,6 @@ abstract class BaseDataSource : KoinComponent {
         } catch (e: JsonConvertException) {
             e.printStackTrace()
             return null
-        }
-    }
-
-    protected suspend fun returnIfSuccess(
-        block: suspend () -> BaseResponse<*>,
-    ): Result<Boolean> {
-        try {
-            val response = block.invoke()
-            if (response.code == 200) {
-                val data = response.data
-                val message = response.message
-                println("[DEBUG] ${response.code} $message $data")
-
-                if (data == null) return Result.Error(Exception(response.message))
-
-                return Result.Success(true)
-            } else {
-                return Result.Error(Exception(response.message))
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Result.Error(e)
         }
     }
 }

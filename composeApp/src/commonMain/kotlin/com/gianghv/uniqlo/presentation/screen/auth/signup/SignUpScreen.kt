@@ -1,5 +1,6 @@
-package com.gianghv.uniqlo.presentation.screen.signup
+package com.gianghv.uniqlo.presentation.screen.auth.signup
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +29,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,59 +38,48 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
+import cafe.adriel.voyager.navigator.internal.BackHandler
 import com.gianghv.uniqlo.constant.DD_MM_YYYY
 import com.gianghv.uniqlo.presentation.component.AppDatePicker
 import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
 import com.gianghv.uniqlo.presentation.component.AppPasswordField
 import com.gianghv.uniqlo.presentation.component.BlackButtonIconEnd
-import com.gianghv.uniqlo.presentation.component.InputWrapper
-import com.gianghv.uniqlo.presentation.component.LoadingDialog
-import com.gianghv.uniqlo.presentation.component.MyAlertDialog
-import com.gianghv.uniqlo.presentation.screen.login.LoginViewModel
-import com.gianghv.uniqlo.presentation.screen.login.UniqloHeader
-import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
+import com.gianghv.uniqlo.presentation.screen.auth.AuthEvent
+import com.gianghv.uniqlo.presentation.screen.auth.AuthViewModel
+import com.gianghv.uniqlo.presentation.screen.auth.login.UniqloHeader
 import com.gianghv.uniqlo.theme.icons.Calendar
 import com.gianghv.uniqlo.util.ext.millisToDateString
 import com.gianghv.uniqlo.util.logging.AppLogger
 
+@OptIn(InternalVoyagerApi::class)
 @Composable
 fun SignUpScreen(
-    modifier: Modifier = Modifier.fillMaxSize(),
-    viewModel: LoginViewModel,
-    currentDestination: MainScreenDestination,
-    onDestinationChanged: (MainScreenDestination) -> Unit,
-    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxSize(), viewModel: AuthViewModel
 ) {
-    val state = viewModel.state.collectAsState()
-    if (state.value.error?.shouldShowDialog == true) {
-        MyAlertDialog(title = "Thông báo", content = state.value.error?.throwable?.message ?: "Unknown error!", rightBtnTitle = "OK", rightBtn = {
-            viewModel.onClearErrorState()
-        })
+    BackHandler(onBack = {
+        viewModel.reducer.sendEvent(AuthEvent.DisplayLogin)
+    }, enabled = true)
 
-        SignUpScreenContent(modifier, viewModel)
-    }
-}
-
-
-@Composable
-fun SignUpScreenContent(modifier: Modifier = Modifier, viewModel: LoginViewModel) {
-
+    SignUpScreenContent(modifier, viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreenContent(modifier: Modifier = Modifier) {
-    val isLoading = remember { mutableStateOf(false) }
+fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.colorScheme.background), viewModel: AuthViewModel) {
     val showDatePicker = remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val genderPickedIndex = remember { mutableStateOf(0) }
     val privacyAgreed = remember { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
+
+    val email = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val name = remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(start = 32.dp, end = 32.dp, top = 16.dp, bottom = 16.dp)
     ) {
-
-        LoadingDialog(isLoading)
 
         Spacer(Modifier.height(32.dp))
 
@@ -102,23 +90,24 @@ fun SignUpScreenContent(modifier: Modifier = Modifier) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Email", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), input = InputWrapper(), placeholder = "email@gmail.com", onMessageSent = {
-                AppLogger.d("Text: $it")
+            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "email@gmail.com", onMessageSent = {
+                email.value = it
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
-
+                email.value = it
+            }, validator = {
+                validateEmail(it)
             })
 
             Spacer(Modifier.height(22.dp))
 
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Password", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            val passwordInputWrapper = InputWrapper()
-            AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), input = passwordInputWrapper, placeholder = "password", onMessageSent = {
-                AppLogger.d("Text: $it")
+            AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "password", onMessageSent = {
+                password.value = it
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
-                passwordInputWrapper.validate {
-                    validatePassword(it)
-                }
+                password.value = it
+            }, validator = {
+                validatePassword(it)
             })
 
             Text(
@@ -132,10 +121,12 @@ fun SignUpScreenContent(modifier: Modifier = Modifier) {
 
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Your name", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), input = InputWrapper(), placeholder = "Enter your name", onMessageSent = {
-                AppLogger.d("Text: $it")
+            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "Enter your name", onMessageSent = {
+                name.value = it
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
-
+                name.value = it
+            }, validator = {
+                validateNotEmpty(it)
             })
 
             Spacer(Modifier.height(22.dp))
@@ -222,8 +213,9 @@ fun SignUpScreenContent(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(24.dp))
 
             BlackButtonIconEnd(modifier = Modifier.fillMaxWidth().height(52.dp), onClick = {
-                // do login
-                showDatePicker.value = true
+                val dob = datePickerState.selectedDateMillis?.millisToDateString(DD_MM_YYYY)
+                val gender = if (genderPickedIndex.value == 0) "male" else "female"
+                viewModel.signUp(email.value, password.value, name.value, dob ?: "", gender, privacyAgreed.value)
             }, text = {
                 Text(text = "Continue", color = Color.White)
             })
@@ -246,8 +238,3 @@ fun SignUpScreenContent(modifier: Modifier = Modifier) {
 
 }
 
-
-@Composable
-fun PreviewSignUpScreen() {
-    SignUpScreenContent()
-}

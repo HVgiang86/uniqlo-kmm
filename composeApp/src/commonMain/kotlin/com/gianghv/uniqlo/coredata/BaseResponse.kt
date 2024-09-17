@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 data class BaseResponse<T : Any?>(
     @SerialName("statusCode") val code: Int,
     @SerialName("message") val message: String? = null,
-    @SerialName("data") val data: T? = null,
+    @SerialName("data")
+    val data: T? = null,
 ) {
     fun isSuccessful() = code in 200..299
     fun hasSuccessfulData() = isSuccessful() && data != null

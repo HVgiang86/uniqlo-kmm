@@ -1,19 +1,14 @@
 package com.gianghv.uniqlo
 
 import android.app.Activity
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
-import com.gianghv.uniqlo.presentation.component.InputWrapper
-import com.gianghv.uniqlo.presentation.screen.signup.PreviewSignUpScreen
+import androidx.core.view.WindowCompat
 import com.gianghv.uniqlo.rootview.App
-import com.gianghv.uniqlo.util.logging.AppLogger
 
 @Composable
 fun MainView() {
@@ -21,9 +16,9 @@ fun MainView() {
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.run {
-//                val systemBarColor = Color(0xFFFFD700).toArgb()
-//                statusBarColor = systemBarColor
-//                WindowCompat.getInsetsController(this, view).isAppearanceLightStatusBars = true
+                val systemBarColor = Color(0xFFFFFFFF).toArgb()
+                statusBarColor = systemBarColor
+                WindowCompat.getInsetsController(this, view).isAppearanceLightStatusBars = true
             }
         }
     }
@@ -37,5 +32,4 @@ fun AppPreview() {
 //    MyCircularProgressIndicator()
 //    MyAlertDialog(title = "Notification", content = "This is the dialog content")
 //    UserInputField(onMessageSent = {})
-    PreviewSignUpScreen()
 }

@@ -22,7 +22,12 @@ val networkModule = module {
     single {
         HttpClient {
             install(ContentNegotiation) {
-                json(json = Json { ignoreUnknownKeys = true }, contentType = ContentType.Any)
+                json(json = Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    prettyPrint = true
+                    coerceInputValues = true
+                }, contentType = ContentType.Any)
             }
             install(Logging) {
                 logger = object : Logger {
@@ -50,7 +55,7 @@ val networkModule = module {
     }
 }
 
-val apiServiceModule= module {
+val apiServiceModule = module {
     factory { UserApi(get()) }
 }
 //

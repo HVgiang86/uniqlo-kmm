@@ -6,8 +6,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.gianghv.uniqlo.base.getViewModel
-import com.gianghv.uniqlo.presentation.screen.login.LoginScreen
-import com.gianghv.uniqlo.presentation.screen.login.LoginViewModel
+import com.gianghv.uniqlo.presentation.screen.auth.AuthScreen
+import com.gianghv.uniqlo.presentation.screen.auth.login.LoginScreen
+import com.gianghv.uniqlo.presentation.screen.auth.AuthViewModel
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
 import com.gianghv.uniqlo.presentation.screen.onboarding.OnBoardingScreen
@@ -20,15 +21,14 @@ interface RootAppDestination {
             val mainViewModel: MainViewModel = getViewModel()
             MainScreen(viewModel = mainViewModel)
         }
-
     }
 
     object Login : Screen, RootAppDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            val loginViewModel: LoginViewModel = getViewModel()
-            LoginScreen(viewModel = loginViewModel, onNavigateMain = {
+            val loginViewModel: AuthViewModel = getViewModel()
+            AuthScreen(viewModel = loginViewModel, onNavigateMain = {
                 navigator.replace(Home)
             })
         }

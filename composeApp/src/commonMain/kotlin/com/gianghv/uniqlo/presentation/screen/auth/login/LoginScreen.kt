@@ -1,4 +1,4 @@
-package com.gianghv.uniqlo.presentation.screen.login
+package com.gianghv.uniqlo.presentation.screen.auth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,7 +33,8 @@ import com.gianghv.uniqlo.presentation.component.BaseOutlinedButton
 import com.gianghv.uniqlo.presentation.component.BlackButtonIconEnd
 import com.gianghv.uniqlo.presentation.component.InputWrapper
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
-import com.gianghv.uniqlo.presentation.component.MyAlertDialog
+import com.gianghv.uniqlo.presentation.screen.auth.AuthEvent
+import com.gianghv.uniqlo.presentation.screen.auth.AuthViewModel
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.logging.AppLogger
 import org.jetbrains.compose.resources.painterResource
@@ -41,26 +42,14 @@ import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.ic_uniqlo
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier.fillMaxSize(), viewModel: LoginViewModel, onNavigateMain: () -> Unit) {
-
-    val state by viewModel.state.asState()
-    if (state.error?.shouldShowDialog == true) {
-        MyAlertDialog(title = "Thông báo", content = state.error?.throwable?.message ?: "Unknown error!", rightBtnTitle = "OK", rightBtn = {})
-    }
-
-    if (state.isLoading) {
-        LoadingDialog()
-    }
-
-    if (state.loginSuccess) {
-        // navigate to main
-        onNavigateMain()
-    }
+fun LoginScreen(
+    modifier: Modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), viewModel: AuthViewModel
+) {
     LoginScreenContent(modifier, viewModel)
 }
 
 @Composable
-fun LoginScreenContent(modifier: Modifier = Modifier, viewModel: LoginViewModel) {
+fun LoginScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.colorScheme.background), viewModel: AuthViewModel) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
@@ -79,29 +68,30 @@ fun LoginScreenContent(modifier: Modifier = Modifier, viewModel: LoginViewModel)
                 Text(modifier = Modifier.padding(bottom = 8.dp), text = "Email", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
                 AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp),
-                    input = InputWrapper(),
                     placeholder = "email@gmail.com",
                     onMessageSent = {
                         email.value = it
                     },
+                    initialValue = viewModel.rememberEmail ?: "",
                     shape = RoundedCornerShape(10.dp),
                     imeAction = ImeAction.Done,
                     onValueChange = {
                         email.value = it
+                    }, validator = {
+                        validateEmail(it)
                     })
 
                 Spacer(Modifier.height(22.dp))
 
                 Text(modifier = Modifier.padding(bottom = 8.dp), text = "Password", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-                val passwordInputWrapper = InputWrapper()
-                AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), input = passwordInputWrapper, placeholder = "password", onMessageSent = {
+                val passwordInputWrapper = remember { mutableStateOf(InputWrapper()) }
+                AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), inputWrapper = passwordInputWrapper, placeholder = "password", onMessageSent = {
                     password.value = it
-                }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
+                }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = { it ->
                     password.value = it
-                    passwordInputWrapper.validate {
-                        validatePassword(it)
-                    }
+                }, validator = {
+                    validatePassword(it)
                 })
 
                 Spacer(Modifier.height(32.dp))
@@ -126,6 +116,7 @@ fun LoginScreenContent(modifier: Modifier = Modifier, viewModel: LoginViewModel)
 
                 BaseOutlinedButton(onClick = {
                     // do sign up navigate
+                    viewModel.reducer.sendEvent(AuthEvent.DisplaySignUp)
                 }, text = {
                     Text(text = "Sign up", color = Color.Black)
                 }, modifier = Modifier.fillMaxWidth().height(52.dp), enable = true
@@ -149,4 +140,3 @@ fun UniqloHeader() {
         Text(text = "UNIQLO", style = MaterialTheme.typography.headlineSmall, color = Color.Black)
     }
 }
-

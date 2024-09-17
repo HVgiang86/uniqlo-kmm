@@ -44,7 +44,7 @@ import com.gianghv.uniqlo.presentation.component.AppPasswordField
 import com.gianghv.uniqlo.presentation.component.BlackButtonIconEnd
 import com.gianghv.uniqlo.presentation.component.InputWrapper
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
-import com.gianghv.uniqlo.presentation.screen.login.UniqloHeader
+import com.gianghv.uniqlo.presentation.screen.auth.login.UniqloHeader
 import com.gianghv.uniqlo.theme.icons.Calendar
 import com.gianghv.uniqlo.util.ext.millisToDateString
 import com.gianghv.uniqlo.util.logging.AppLogger
@@ -77,7 +77,7 @@ fun HomeScreen() {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Email", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), input = InputWrapper(), placeholder = "email@gmail.com", onMessageSent = {
+            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "email@gmail.com", onMessageSent = {
                 AppLogger.d("Text: $it")
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
 
@@ -88,7 +88,7 @@ fun HomeScreen() {
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Password", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
             val passwordInputWrapper = InputWrapper()
-            AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), input = passwordInputWrapper, placeholder = "password", onMessageSent = {
+            AppPasswordField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "password", onMessageSent = {
                 AppLogger.d("Text: $it")
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
                 passwordInputWrapper.validate {
@@ -107,7 +107,7 @@ fun HomeScreen() {
 
             Text(modifier = Modifier.padding(bottom = 8.dp), text = "Your name", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), input = InputWrapper(), placeholder = "Enter your name", onMessageSent = {
+            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "Enter your name", onMessageSent = {
                 AppLogger.d("Text: $it")
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
 

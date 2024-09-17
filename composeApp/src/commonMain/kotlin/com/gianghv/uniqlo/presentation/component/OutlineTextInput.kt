@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import com.gianghv.uniqlo.theme.Typography
 import com.gianghv.uniqlo.theme.icons.Visibility
 import com.gianghv.uniqlo.theme.icons.VisibilityOff
 import com.gianghv.uniqlo.util.ValidateHelper
+import com.gianghv.uniqlo.util.logging.AppLogger
 import org.jetbrains.compose.resources.stringResource
 import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.textfield_desc
@@ -54,8 +56,10 @@ import uniqlo.composeapp.generated.resources.textfield_desc
 @Composable
 fun AppOutlinedTextField(
     modifier: Modifier,
-    input: InputWrapper,
+    validator: ValidateHelper.(String) -> String? = {null},
+    inputWrapper: MutableState<InputWrapper> = remember { mutableStateOf(InputWrapper()) },
     placeholder: String,
+    initialValue: String = "",
     leadingIcon: @Composable (() -> Unit)? = null,
     onValueChange: ((String) -> Unit)? = null,
     resetScroll: () -> Unit = {},
@@ -64,7 +68,7 @@ fun AppOutlinedTextField(
     shape: Shape = RoundedCornerShape(4.dp)
 ) {
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue())
+        mutableStateOf(TextFieldValue(initialValue))
     }
 
     // Used to decide if the keyboard should be shown
@@ -74,7 +78,14 @@ fun AppOutlinedTextField(
         UserInputTextOutlined(
             onTextChanged = {
                 textState = it
-                onValueChange?.invoke(it.text)
+                inputWrapper.value = inputWrapper.value.updateValue(it.text, true)
+                inputWrapper.value = inputWrapper.value.validate { input ->
+                    validator(input)
+                }
+
+                if (inputWrapper.value.isValid) {
+                    onValueChange?.invoke(it.text)
+                }
             },
 
             hint = placeholder,
@@ -104,10 +115,10 @@ fun AppOutlinedTextField(
             singleLine = true
         )
 
-        if (!input.isValid) {
+        if (!inputWrapper.value.isValid) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = input.errorString ?: "", modifier = Modifier.padding(horizontal = 2.dp), style = Typography.bodySmall, color = Color.Red
+                text = inputWrapper.value.errorString ?: "", modifier = Modifier.padding(horizontal = 2.dp), style = Typography.bodySmall, color = Color.Red
             )
         }
     }
@@ -117,7 +128,8 @@ fun AppOutlinedTextField(
 @Composable
 fun AppPasswordField(
     modifier: Modifier,
-    input: InputWrapper,
+    validator: ValidateHelper.(String) -> String? = {null},
+    inputWrapper: MutableState<InputWrapper> = remember { mutableStateOf(InputWrapper()) },
     placeholder: String,
     leadingIcon: @Composable (() -> Unit)? = null,
     onValueChange: ((String) -> Unit)? = null,
@@ -139,7 +151,14 @@ fun AppPasswordField(
     Column {
         UserInputTextOutlined(onTextChanged = {
             textState = it
-            onValueChange?.invoke(it.text)
+            inputWrapper.value = inputWrapper.value.updateValue(it.text, true)
+            inputWrapper.value = inputWrapper.value.validate { input ->
+                validator(input)
+            }
+
+            if (inputWrapper.value.isValid) {
+                onValueChange?.invoke(it.text)
+            }
         },
             keyboardType = KeyboardType.Password,
             hint = placeholder,
@@ -176,17 +195,17 @@ fun AppPasswordField(
                 }
             })
 
-        if (!input.isValid) {
+        if (!inputWrapper.value.isValid) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = input.errorString ?: "", modifier = Modifier.padding(horizontal = 2.dp), style = Typography.bodySmall, color = Color.Red
+                text = inputWrapper.value.errorString ?: "", modifier = Modifier.padding(horizontal = 2.dp), style = Typography.bodySmall, color = Color.Red
             )
         }
     }
 }
 
 data class InputWrapper(
-    val value: String = "", val errorString: String? = null
+    var value: String = "", var errorString: String? = null
 ) {
     val isValid: Boolean
         get() = errorString == null
@@ -196,7 +215,8 @@ data class InputWrapper(
     }
 
     fun validate(block: ValidateHelper.(String) -> String?): InputWrapper {
-        return copy(errorString = block.invoke(ValidateHelper, value))
+        val result = block.invoke(ValidateHelper, value)
+        return copy(errorString = result)
     }
 }
 
