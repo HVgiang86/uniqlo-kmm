@@ -13,7 +13,7 @@ data class RootAppUiState(
 ) : Reducer.UiState(isLoading, error) {
     companion object {
         fun initial() = RootAppUiState(
-            isLoading = false, error = null, isLoggedIn = false, isFirstRun = true
+            isLoading = false, error = null, isLoggedIn = false, isFirstRun = false
         )
     }
 }

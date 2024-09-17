@@ -11,5 +11,6 @@ class AppRepositoryImpl(private val userPreferences: UserPreferences) : AppRepos
     override suspend fun setFirstRun(isFirstRun: Boolean) = userPreferences.putBoolean(KEY_IS_ONBOARD_SHOWN, isFirstRun)
     override suspend fun isLoggedIn(): Boolean = userPreferences.getBoolean(KEY_IS_LOGIN)
     override suspend fun setLoggedIn(isLoggedIn: Boolean) = userPreferences.putBoolean(KEY_IS_LOGIN, isLoggedIn)
-    override suspend fun getUserId(): String? = userPreferences.getString(UserPreferences.KEY_USER_ID)
+    override suspend fun getUserId(): Long? = userPreferences.getLong(UserPreferences.KEY_USER_ID)
+    override suspend fun setUserId(userId: Long) = userPreferences.putLong(UserPreferences.KEY_USER_ID, userId)
 }

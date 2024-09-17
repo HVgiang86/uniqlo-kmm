@@ -5,5 +5,6 @@ interface AppRepository {
     suspend fun setFirstRun(isFirstRun: Boolean)
     suspend fun isLoggedIn(): Boolean
     suspend fun setLoggedIn(isLoggedIn: Boolean)
-    suspend fun getUserId(): String?
+    suspend fun getUserId(): Long?
+    suspend fun setUserId(userId: Long)
 }

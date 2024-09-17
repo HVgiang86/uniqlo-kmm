@@ -4,15 +4,17 @@ import com.gianghv.uniqlo.base.BaseViewModel
 import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
+import com.gianghv.uniqlo.data.AppRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.util.ValidateHelper
+import com.gianghv.uniqlo.util.logging.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val userRepository: UserRepository) : BaseViewModel<AuthState, AuthEvent>() {
+class AuthViewModel(private val userRepository: UserRepository, private val appRepository: AppRepository) : BaseViewModel<AuthState, AuthEvent>() {
     override val reducer = AuthReducer(AuthState.initial())
 
     override val state: StateFlow<AuthState>
@@ -41,6 +43,11 @@ class AuthViewModel(private val userRepository: UserRepository) : BaseViewModel<
 
                 userRepository.login(email, password).collect {
                     WholeApp.USER_ID = it.id
+                    appRepository.setLoggedIn(true)
+                    appRepository.setUserId(it.id)
+
+                    val uid = appRepository.getUserId()
+                    AppLogger.d("User id: $uid")
                     reducer.sendEvent(AuthEvent.NavigateMain)
                 }
             }
@@ -59,8 +66,7 @@ class AuthViewModel(private val userRepository: UserRepository) : BaseViewModel<
                     if (it) {
                         reducer.sendEvent(AuthEvent.SignUpSuccess)
                         rememberEmail = email
-                    }
-                    else reducer.sendEvent(AuthEvent.SignUpFail(Exception("Sign up fail")))
+                    } else reducer.sendEvent(AuthEvent.SignUpFail(Exception("Sign up fail")))
                 }
             }
         }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gianghv.uniqlo.data.AppRepository
+import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.rootview.navigation.RootAppDestination
@@ -38,18 +39,19 @@ fun App(modifier: Modifier = Modifier) = AppTheme {
         } else {
             AppLogger.d("Not first run")
             val isLoggedIn = appRepository.isLoggedIn()
+            AppLogger.d("Is logged in: $isLoggedIn")
 
             if (isLoggedIn) {
                 val userId = appRepository.getUserId()
-                if (!userId.isNullOrEmpty()) {
+                if (userId != null) {
+                    AppLogger.d("User id: $userId")
                     state.value = state.value.copy(isLoading = true, error = null, isFirstRun = false, isLoggedIn = true)
+                    WholeApp.USER_ID = userId
                 }
             } else {
                 state.value = state.value.copy(isLoading = false, error = null, isFirstRun = false, isLoggedIn = false)
-
             }
         }
-
     }
 
     if (state.value.error != null) {
