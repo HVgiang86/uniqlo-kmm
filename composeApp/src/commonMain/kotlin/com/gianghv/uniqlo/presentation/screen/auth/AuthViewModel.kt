@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class AuthViewModel(private val userRepository: UserRepository, private val appRepository: AppRepository) : BaseViewModel<AuthState, AuthEvent>() {
     override val reducer = AuthReducer(AuthState.initial())
@@ -44,10 +45,11 @@ class AuthViewModel(private val userRepository: UserRepository, private val appR
                 userRepository.login(email, password).collect {
                     WholeApp.USER_ID = it.id
                     appRepository.setLoggedIn(true)
-                    appRepository.setUserId(it.id)
 
-                    val uid = appRepository.getUserId()
-                    AppLogger.d("User id: $uid")
+                    runBlocking {
+                        appRepository.setUserId(it.id)
+                    }
+
                     reducer.sendEvent(AuthEvent.NavigateMain)
                 }
             }

@@ -17,13 +17,17 @@ import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.gianghv.uniqlo.base.ExampleViewModel
+import com.gianghv.uniqlo.presentation.screen.aichat.AIChatScreen
 import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
+import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
+import com.gianghv.uniqlo.presentation.screen.wishlist.WishListScreen
 import uniqlo.composeapp.generated.resources.Res
-import uniqlo.composeapp.generated.resources.github
+import uniqlo.composeapp.generated.resources.ai_chat
 import uniqlo.composeapp.generated.resources.home
+import uniqlo.composeapp.generated.resources.profile
+import uniqlo.composeapp.generated.resources.wishlist
 
 interface TopLevelScreenDestination : MainScreenDestination {
     companion object {
@@ -42,16 +46,36 @@ interface MainScreenDestination {
         override fun getTitle() = Res.string.home.toString()
     }
 
-    object GithubProfile : Screen, TopLevelScreenDestination {
+    object WishList : Screen, TopLevelScreenDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
+            WishListScreen()
         }
 
-        override fun getTitle() = Res.string.github.toString()
+        override fun getTitle() = Res.string.wishlist.toString()
 
     }
 
+    object AiChat : Screen, TopLevelScreenDestination {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            AIChatScreen()
+        }
+
+        override fun getTitle() = Res.string.ai_chat.toString()
+    }
+
+    object Profile : Screen, TopLevelScreenDestination {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            ProfileScreen()
+        }
+
+        override fun getTitle() = Res.string.profile.toString()
+    }
 
     fun getTitle(): String {
         return ""
@@ -112,11 +136,8 @@ private fun AnimatedTransition(navigator: Navigator) {
 
         enterTransition togetherWith exitTransition
     }) { currentScreen ->
-
-
         navigator.saveableState("transition", currentScreen) {
             currentScreen.Content()
         }
-
     }
 }

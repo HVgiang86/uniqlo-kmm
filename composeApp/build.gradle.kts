@@ -37,21 +37,29 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class) instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    cocoapods {
-        ios.deploymentTarget = "14.1"
-        version = "1.0.0"
-        summary = "Shared module of FindTravelNow"
-        homepage = "https://github.com/mirzemehdi/FindTravelNow-KMM/"
-        framework {
-            baseName = "shared"
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
+        it.binaries.framework {
+            baseName = "ComposeApp"
             isStatic = true
-            export(libs.kmpNotifier)
+            version = "1.0.0"
         }
     }
+
+//    cocoapods {
+//        ios.deploymentTarget = "14.1"
+//        version = "1.0.0"
+//        summary = "Shared module of FindTravelNow"
+//        homepage = "https://github.com/mirzemehdi/FindTravelNow-KMM/"
+//        framework {
+//            baseName = "shared"
+//            isStatic = true
+//            export(libs.kmpNotifier)
+//        }
+//    }
 
     sourceSets {
         commonMain.dependencies {
