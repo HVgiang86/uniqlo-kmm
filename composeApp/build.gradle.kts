@@ -71,8 +71,8 @@ kotlin {
             implementation(libs.voyager.navigator)
             implementation(libs.bundles.voyager)
             implementation(libs.bundles.ktor)
-            implementation(libs.coil)
-            implementation(libs.coil.network.ktor)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.ktor)
             implementation(libs.napier)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.moko.mvvm)
@@ -85,6 +85,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
+            implementation("io.github.dokar3:sonner:0.3.8")
         }
 
         commonTest.dependencies {

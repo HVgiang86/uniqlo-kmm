@@ -1,6 +1,5 @@
 package com.gianghv.uniqlo.presentation.screen.main
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -16,14 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.gianghv.uniqlo.presentation.component.MyAppToolbar
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenNavigation
 import com.gianghv.uniqlo.presentation.screen.main.navigation.isTopLevelScreen
+import com.gianghv.uniqlo.theme.Black
 import com.gianghv.uniqlo.theme.Divider_color
-import com.gianghv.uniqlo.theme.Silver_d8
 import com.gianghv.uniqlo.util.asState
-import com.gianghv.uniqlo.util.logging.AppLogger
 import org.jetbrains.compose.resources.painterResource
 
 
@@ -44,13 +41,7 @@ fun MainScreen(
     val state by viewModel.state.asState()
     state.data
 
-    Scaffold(topBar = {
-        val isToolbarInvisible = true
-
-        AnimatedVisibility(isToolbarInvisible.not()) {
-            MyAppToolbar(title = if (isToolbarInvisible) "" else currentDestination.getTitle(), onNavigationIconClick = { onNavigateBack() })
-        }
-    }, content = {
+    Scaffold(content = {
         content()
     }, bottomBar = {
         if (currentDestination.isTopLevelScreen()) {
@@ -75,7 +66,7 @@ private fun BottomNavigation(
             val navItems = BottomNavItem.entries.toTypedArray()
             navItems.forEach { item ->
                 val isSelected = item == selectedNavItem
-                val iconTint = if (isSelected) MaterialTheme.colorScheme.secondary else Silver_d8
+                val iconTint = if (isSelected) MaterialTheme.colorScheme.secondary else Black
                 NavigationBarItem(icon = {
                     Icon(
                         painter = painterResource(item.iconRes), contentDescription = null, tint = iconTint
@@ -85,7 +76,7 @@ private fun BottomNavigation(
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.secondary,
                         indicatorColor = MaterialTheme.colorScheme.background,
-                        unselectedIconColor = Silver_d8,
+                        unselectedIconColor = Black,
                     ), onClick = { onNavigationItemSelected(item) })
             }
         }

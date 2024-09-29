@@ -1,11 +1,15 @@
 package com.gianghv.uniqlo.di
 
 import com.gianghv.uniqlo.data.AppRepository
+import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.UserRepository
+import com.gianghv.uniqlo.data.repository.AppRepositoryImpl
+import com.gianghv.uniqlo.data.repository.ProductRepositoryImpl
 import com.gianghv.uniqlo.data.repository.UserRepositoryImpl
 import com.gianghv.uniqlo.data.source.preferences.UserPreferences
 import com.gianghv.uniqlo.data.source.preferences.UserPreferencesImpl
-import com.gianghv.uniqlo.data.repository.AppRepositoryImpl
+import com.gianghv.uniqlo.data.source.remote.ProductDataSource
+import com.gianghv.uniqlo.data.source.remote.ProductDataSourceImpl
 import com.gianghv.uniqlo.data.source.remote.UserRemoteSource
 import com.gianghv.uniqlo.data.source.remote.UserRemoteSourceImpl
 import com.russhwolf.settings.Settings
@@ -19,6 +23,9 @@ import org.koin.dsl.module
 private val repositoryModule = module {
     single<UserRepository> {
         UserRepositoryImpl(get(), get())
+    }
+    single<ProductRepository> {
+        ProductRepositoryImpl(get())
     }
     singleOf(::AppRepositoryImpl) bind AppRepository::class
 }
@@ -37,6 +44,10 @@ private val dispatcherModule = module {
 private val dataSourceModule = module {
     single<UserRemoteSource> {
         UserRemoteSourceImpl(get())
+    }
+
+    single<ProductDataSource> {
+        ProductDataSourceImpl(get())
     }
 }
 

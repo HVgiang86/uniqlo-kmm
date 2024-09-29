@@ -12,8 +12,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Parameters
 
 class UserApi(private val httpClient: HttpClient) {
-    suspend fun exampleCreateOrGetUser(): BaseResponse<String> = httpClient.post(ApiEndPoint.EXAMPLE_END_POINT).body()
-
     suspend fun login(email: String, password: String): BaseResponse<LoginResponse> = httpClient.post(BASE_URL + ApiEndPoint.LOGIN_END_POINT) {
         setBody(FormDataContent(Parameters.build {
             append("email", email)

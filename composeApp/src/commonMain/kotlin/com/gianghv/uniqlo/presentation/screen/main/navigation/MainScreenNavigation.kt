@@ -17,12 +17,15 @@ import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.gianghv.uniqlo.base.getViewModel
 import com.gianghv.uniqlo.presentation.screen.aichat.AIChatScreen
 import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
+import com.gianghv.uniqlo.presentation.screen.home.HomeViewModel
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
 import com.gianghv.uniqlo.presentation.screen.wishlist.WishListScreen
+import com.gianghv.uniqlo.util.logging.AppLogger
 import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.ai_chat
 import uniqlo.composeapp.generated.resources.home
@@ -40,7 +43,9 @@ interface MainScreenDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            HomeScreen()
+            val viewModel: HomeViewModel = getViewModel()
+            AppLogger.d("start Home Screen")
+            HomeScreen(viewModel)
         }
 
         override fun getTitle() = Res.string.home.toString()

@@ -1,6 +1,7 @@
 package com.gianghv.uniqlo.presentation.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -56,16 +57,19 @@ import uniqlo.composeapp.generated.resources.textfield_desc
 @Composable
 fun AppOutlinedTextField(
     modifier: Modifier,
-    validator: ValidateHelper.(String) -> String? = {null},
+    validator: ValidateHelper.(String) -> String? = { null },
     inputWrapper: MutableState<InputWrapper> = remember { mutableStateOf(InputWrapper()) },
     placeholder: String,
     initialValue: String = "",
+    maxLines: Int = 1,
     leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     onValueChange: ((String) -> Unit)? = null,
     resetScroll: () -> Unit = {},
     imeAction: ImeAction = ImeAction.Done,
     onMessageSent: (String) -> Unit,
-    shape: Shape = RoundedCornerShape(4.dp)
+    shape: Shape = RoundedCornerShape(4.dp),
+    onClick: () -> Unit = {}
 ) {
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(initialValue))
@@ -111,8 +115,10 @@ fun AppOutlinedTextField(
             imeAction = imeAction,
             shape = shape,
             leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
             modifier = modifier.height(52.dp),
-            singleLine = true
+            maxLines = 1,
+            onClick = onClick
         )
 
         if (!inputWrapper.value.isValid) {
@@ -128,7 +134,7 @@ fun AppOutlinedTextField(
 @Composable
 fun AppPasswordField(
     modifier: Modifier,
-    validator: ValidateHelper.(String) -> String? = {null},
+    validator: ValidateHelper.(String) -> String? = { null },
     inputWrapper: MutableState<InputWrapper> = remember { mutableStateOf(InputWrapper()) },
     placeholder: String,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -136,7 +142,9 @@ fun AppPasswordField(
     resetScroll: () -> Unit = {},
     imeAction: ImeAction = ImeAction.Done,
     onMessageSent: (String) -> Unit,
-    shape: Shape = RoundedCornerShape(4.dp)
+    shape: Shape = RoundedCornerShape(4.dp),
+    maxLines: Int = 1,
+    onClick: () -> Unit = {}
 ) {
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue())
@@ -184,8 +192,8 @@ fun AppPasswordField(
             shape = shape,
             leadingIcon = leadingIcon,
             modifier = modifier.height(52.dp),
-            singleLine = true,
             visualTransformation = visualTransformation,
+            maxLines = maxLines,
             trailingIcon = {
                 val image = if (passwordVisible) Visibility else VisibilityOff
                 IconButton(onClick = {
@@ -193,7 +201,7 @@ fun AppPasswordField(
                 }) {
                     Icon(imageVector = image, contentDescription = null)
                 }
-            })
+            }, onClick = onClick)
 
         if (!inputWrapper.value.isValid) {
             Spacer(modifier = Modifier.height(4.dp))
@@ -234,23 +242,23 @@ fun UserInputTextOutlined(
     focusState: Boolean,
     imeAction: ImeAction = ImeAction.Done,
     modifier: Modifier = Modifier,
-    singleLine: Boolean,
+    maxLines: Int = 1,
     shape: Shape = OutlinedTextFieldDefaults.shape,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    onClick: () -> Unit
 ) {
-    val a11ylabel = description
     Row(
         modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
     ) {
         Box(modifier = modifier.fillMaxSize()) {
             BaseOutlinedTextField(
                 textFieldValue, hint, onTextChanged, onTextFieldFocused, keyboardType, focusState, imeAction, onMessageSent, Modifier.semantics {
-                    contentDescription = a11ylabel
+                    contentDescription = description
                     keyboardShownProperty = keyboardShown
-                }, singleLine, leadingIcon = leadingIcon, trailingIcon = trailingIcon, shape = shape, visualTransformation = visualTransformation
-            )
+                }, maxLines = maxLines, leadingIcon = leadingIcon, trailingIcon = trailingIcon, shape = shape, visualTransformation = visualTransformation
+            , onClick = onClick)
         }
     }
 }
@@ -266,11 +274,12 @@ fun BoxScope.BaseOutlinedTextField(
     imeAction: ImeAction = ImeAction.Done,
     onMessageSent: (String) -> Unit,
     modifier: Modifier = Modifier,
-    singleLine: Boolean = true,
+    maxLines: Int = 1,
     shape: Shape = OutlinedTextFieldDefaults.shape,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    onClick: () -> Unit = {}
 ) {
     var lastFocusState by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -279,6 +288,10 @@ fun BoxScope.BaseOutlinedTextField(
         value = textFieldValue,
         onValueChange = onTextChanged,
         modifier = modifier.fillMaxWidth().align(Alignment.CenterStart).onFocusChanged { state ->
+            if (state.isFocused) {
+                AppLogger.d("click")
+                onClick()
+            }
             if (lastFocusState != state.isFocused) {
                 onTextFieldFocused(state.isFocused)
             }
@@ -293,7 +306,8 @@ fun BoxScope.BaseOutlinedTextField(
                 keyboardController?.hide()
             }
         },
-        singleLine = singleLine,
+        maxLines = maxLines,
+        singleLine = maxLines == 1,
         textStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
         shape = shape,
         leadingIcon = leadingIcon,
@@ -303,10 +317,13 @@ fun BoxScope.BaseOutlinedTextField(
 
     val disableContentColor = MaterialTheme.colorScheme.onSurfaceVariant
     if (textFieldValue.text.isEmpty() && !focusState) {
+        val startPadding = if (leadingIcon != null) 40.dp else 16.dp
+        val endPadding = if (trailingIcon != null) 40.dp else 16.dp
+
+        val modifierT = Modifier.align(Alignment.CenterStart).padding(start = startPadding, end = endPadding)
+
         Text(
-            modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp, end = 64.dp),
-            text = hint,
-            style = MaterialTheme.typography.bodyLarge.copy(color = disableContentColor)
+            modifier = modifierT, maxLines = maxLines, text = hint, style = MaterialTheme.typography.bodySmall.copy(color = disableContentColor)
         )
     }
 }

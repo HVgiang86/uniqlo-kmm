@@ -27,6 +27,10 @@ abstract class BaseViewModel<T : Reducer.UiState, E : Reducer.UiEvent> : ScreenM
     abstract fun onClearLoadingState()
     abstract fun onClearErrorState()
 
+    fun sendEvent(event: E) {
+        reducer.sendEvent(event)
+    }
+
     abstract val onException: ((Throwable) -> Unit)
 
     protected var exceptionHandler = CoroutineExceptionHandler { _, throwable ->
