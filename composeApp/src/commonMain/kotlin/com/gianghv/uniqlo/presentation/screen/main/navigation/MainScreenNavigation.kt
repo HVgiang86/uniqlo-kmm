@@ -23,6 +23,8 @@ import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
 import com.gianghv.uniqlo.presentation.screen.home.HomeViewModel
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
+import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailScreen
+import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
 import com.gianghv.uniqlo.presentation.screen.wishlist.WishListScreen
 import com.gianghv.uniqlo.util.logging.AppLogger
@@ -38,7 +40,35 @@ interface TopLevelScreenDestination : MainScreenDestination {
     }
 }
 
+abstract class WithParam(open val params: Map<String, Any>): MainScreenDestination {
+    inline fun <reified T> getValue(key: String): T? {
+        return params[key] as? T
+    }
+
+    inline fun <reified T> getValue(key: String, default: T): T {
+        val temp = params[key] as? T
+        return temp ?: default
+    }
+}
+
 interface MainScreenDestination {
+    class ProductDetail(params: Map<String, Any>) : Screen , WithParam(params) {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val productId: Long? = getValue(PRODUCT_ID_KEY)
+            val viewModel: ProductDetailViewModel = getViewModel()
+            ProductDetailScreen(viewModel, onBack = {
+                navigator.pop()
+            }, productId = productId)
+
+        }
+
+        companion object {
+            const val PRODUCT_ID_KEY = "product_id_key"
+        }
+    }
+
     object Home : Screen, TopLevelScreenDestination {
         @Composable
         override fun Content() {

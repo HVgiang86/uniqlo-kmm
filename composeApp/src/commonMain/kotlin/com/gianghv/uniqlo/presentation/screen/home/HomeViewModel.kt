@@ -39,6 +39,7 @@ class HomeViewModel(private val productRepository: ProductRepository) : BaseView
             }
         }
     }
+
 }
 
 class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel) : Reducer<HomeUiState, HomeUiEvent>(initialVal) {

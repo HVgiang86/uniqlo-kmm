@@ -38,8 +38,6 @@ fun MainScreen(
     onNavigateBack: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val state by viewModel.state.asState()
-    state.data
 
     Scaffold(content = {
         content()

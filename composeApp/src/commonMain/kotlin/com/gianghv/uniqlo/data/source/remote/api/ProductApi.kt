@@ -10,4 +10,5 @@ import io.ktor.client.request.get
 
 class ProductApi(private val httpClient: HttpClient) {
     suspend fun getAllProduct(): BaseResponse<List<Product>> = httpClient.get(BASE_URL + PRODUCT_END_POINT).body()
+    suspend fun getProductDetail(productId: String): BaseResponse<Product> = httpClient.get("$BASE_URL$PRODUCT_END_POINT/$productId").body()
 }

@@ -69,3 +69,4 @@ val Red_48 = Color(0xFFDE3048)
 val Alabaster = Color(0xFFF1E9E9)
 
 val Gray = Color(0xFFEAE6E6)
+val Card_Border_Gray = Color(0x8b888888)

@@ -55,24 +55,28 @@ val Typography
             fontFamily = popinsFontFamily
         ),
         titleMedium = TextStyle(
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = popinsFontFamily
-        ),
-        titleSmall = TextStyle(
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = popinsFontFamily
         ),
-        bodyMedium = TextStyle(
+        titleSmall = TextStyle(
             fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = popinsFontFamily
+        ),
+        bodyLarge = TextStyle(
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Normal,
+            fontFamily = popinsFontFamily
+        ),
+        bodyMedium = TextStyle(
+            fontSize = 13.sp,
             fontWeight = FontWeight.Normal,
             fontFamily = popinsFontFamily
         ),
         bodySmall = TextStyle(
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Thin,
             fontFamily = popinsFontFamily
         )
-
     )

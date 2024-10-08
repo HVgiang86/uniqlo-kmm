@@ -10,4 +10,8 @@ class ProductRepositoryImpl (private val productRemote: ProductDataSource) : Pro
     override suspend fun getAllProduct(): Flow<List<Product>> = flowContext {
         productRemote.getAllProduct()
     }
+
+    override suspend fun getProductDetail(productId: Long): Flow<Product> = flowContext{
+        productRemote.getProductDetail(productId.toString())
+    }
 }
