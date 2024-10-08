@@ -30,7 +30,6 @@ abstract class Reducer<S : Reducer.UiState, E : Reducer.UiEvent>(initialVal: S) 
 
         if (BuildConfig.DEBUG && success) {
             // Only log in debug mode
-            AppLogger.d("New state: $newState")
             timeCapsule.addState(newState)
         }
     }

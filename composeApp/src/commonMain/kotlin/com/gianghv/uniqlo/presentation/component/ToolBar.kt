@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,13 +42,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.gianghv.uniqlo.domain.Product
 import org.jetbrains.compose.resources.vectorResource
 import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.ic_cart
 
 @Composable
 fun HomeToolBar(
-    onSearchChange: (String) -> Unit, onSearch: (String) -> Unit, onMenuClick: () -> Unit, onCartClick: () -> Unit, searchSuggestion: List<String> = emptyList()
+    onSearchChange: (String) -> Unit, onSearch: (String) -> Unit, onMenuClick: () -> Unit, onCartClick: () -> Unit, searchSuggestion: List<Product> = emptyList()
 ) {
     var text by rememberSaveable { mutableStateOf("") }
     var searchRequired by remember {
@@ -99,6 +99,7 @@ fun MyAppBar(
                 Icon(imageVector = Icons.Default.Search, contentDescription = null)
             },
             maxLines = 1,
+            textStyle = MaterialTheme.typography.bodyMedium,
             onClick = {
                 onSearchTap()
             })
@@ -116,7 +117,7 @@ fun MyAppBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchAppBarTitle(
-    text: String, onSearchTap: (String) -> Unit, onValueChange: (String) -> Unit, onCancelTap: () -> Unit = {}, searchSuggestion: List<String> = emptyList()
+    text: String, onSearchTap: (String) -> Unit, onValueChange: (String) -> Unit, onCancelTap: () -> Unit = {}, searchSuggestion: List<Product> = emptyList()
 ) {
     val focusManager = LocalFocusManager.current
     Box(Modifier.fillMaxWidth().wrapContentHeight().padding(top = 32.dp).semantics { isTraversalGroup = true }.pointerInput(Unit) {
@@ -145,7 +146,8 @@ fun SearchAppBarTitle(
                         }
                     },
                     maxLines = 1,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    textStyle = MaterialTheme.typography.bodySmall
                 )
             },
             expanded = true,
@@ -156,14 +158,14 @@ fun SearchAppBarTitle(
             //this to show Search suggestions
             Column(Modifier.wrapContentHeight().verticalScroll(rememberScrollState())) {
                 repeat(searchSuggestion.size) { index ->
-                    val resultText = searchSuggestion[index]
-                    ListItem(headlineContent = { Text(resultText) }, supportingContent = { Text("Additional info") }, leadingContent = {
-                        Icon(
-                            Icons.Filled.Star, contentDescription = null
-                        )
-                    }, colors = ListItemDefaults.colors(containerColor = Color.Transparent), modifier = Modifier.clickable {
-                        onSearchTap(resultText)
-                    }.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp))
+                    val product = searchSuggestion[index]
+                    ListItem(headlineContent = { Text(product.name.toString()) },
+                        supportingContent = { Text(product.category?.name.toString()) },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        modifier = Modifier.clickable {
+                            onSearchTap(product.name.toString())
+                        }.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
                 }
             }
         }

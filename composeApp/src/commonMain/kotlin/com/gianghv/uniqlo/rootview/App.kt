@@ -1,9 +1,12 @@
 package com.gianghv.uniqlo.rootview
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.setSingletonImageLoaderFactory
 import com.gianghv.uniqlo.data.AppRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
@@ -11,15 +14,27 @@ import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.rootview.navigation.RootAppDestination
 import com.gianghv.uniqlo.rootview.navigation.RootAppNavigation
 import com.gianghv.uniqlo.theme.AppTheme
+import com.gianghv.uniqlo.util.getAsyncImageLoader
 import com.gianghv.uniqlo.util.logging.AppLogger
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun App() = AppTheme {
     val state = remember { mutableStateOf(RootAppUiState.initial()) }
     val appRepository: AppRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
+
+    setSingletonImageLoaderFactory { context ->
+        getAsyncImageLoader(context)
+    }
 
     coroutineScope.launch {
         val isFirstRun = appRepository.isFirstRun()

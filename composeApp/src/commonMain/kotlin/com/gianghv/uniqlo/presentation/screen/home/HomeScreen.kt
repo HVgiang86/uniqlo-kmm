@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +53,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val state by viewModel.state.asState()
 
     val uriHandler = LocalUriHandler.current
-    val searchSuggestion = mutableStateListOf<String>()
+    val searchSuggestion = mutableStateListOf<Product>()
     val toasterState = rememberToasterState()
     val scope = rememberCoroutineScope()
     val productDetailId = remember { mutableStateOf<Long?>(null) }
@@ -87,7 +86,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             toasterState.show(message = "Cart Clicked", type = ToastType.Info)
         }, onSearchChange = {
             searchSuggestion.clear()
-            searchSuggestion.addAll(state.productList.filter { text -> text.name?.contains(it, ignoreCase = true) == true }.map { it.name ?: "" })
+            searchSuggestion.addAll(state.productList.filter { text -> text.name?.contains(it, ignoreCase = true) == true })
         }, searchSuggestion = searchSuggestion.toList())
     }) {
         val allProducts = state.productList
@@ -100,7 +99,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
         Column(modifier = Modifier.fillMaxSize().onGloballyPositioned { layoutCoordinates ->
             val widthInPx = layoutCoordinates.size.width
             boxWidth = with(density) { widthInPx.toDp() }
-        }.padding(top = it.calculateTopPadding())) {
+        }.padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
 
 //            HeaderRow("For you!", onShowMoreClicked = {
 //

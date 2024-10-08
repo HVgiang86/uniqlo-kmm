@@ -1,7 +1,6 @@
 package com.gianghv.uniqlo.presentation.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -38,6 +37,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -69,6 +69,7 @@ fun AppOutlinedTextField(
     imeAction: ImeAction = ImeAction.Done,
     onMessageSent: (String) -> Unit,
     shape: Shape = RoundedCornerShape(4.dp),
+    textStyle: TextStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
     onClick: () -> Unit = {}
 ) {
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -118,6 +119,7 @@ fun AppOutlinedTextField(
             trailingIcon = trailingIcon,
             modifier = modifier.height(52.dp),
             maxLines = 1,
+            textStyle = textStyle,
             onClick = onClick
         )
 
@@ -143,6 +145,7 @@ fun AppPasswordField(
     imeAction: ImeAction = ImeAction.Done,
     onMessageSent: (String) -> Unit,
     shape: Shape = RoundedCornerShape(4.dp),
+    textStyle: TextStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
     maxLines: Int = 1,
     onClick: () -> Unit = {}
 ) {
@@ -201,7 +204,10 @@ fun AppPasswordField(
                 }) {
                     Icon(imageVector = image, contentDescription = null)
                 }
-            }, onClick = onClick)
+            },
+            textStyle = textStyle,
+            onClick = onClick
+        )
 
         if (!inputWrapper.value.isValid) {
             Spacer(modifier = Modifier.height(4.dp))
@@ -247,18 +253,33 @@ fun UserInputTextOutlined(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    textStyle: TextStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
     onClick: () -> Unit
 ) {
     Row(
         modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            BaseOutlinedTextField(
-                textFieldValue, hint, onTextChanged, onTextFieldFocused, keyboardType, focusState, imeAction, onMessageSent, Modifier.semantics {
+            BaseOutlinedTextField(textFieldValue,
+                hint,
+                onTextChanged,
+                onTextFieldFocused,
+                keyboardType,
+                focusState,
+                imeAction,
+                onMessageSent,
+                Modifier.semantics {
                     contentDescription = description
                     keyboardShownProperty = keyboardShown
-                }, maxLines = maxLines, leadingIcon = leadingIcon, trailingIcon = trailingIcon, shape = shape, visualTransformation = visualTransformation
-            , onClick = onClick)
+                },
+                maxLines = maxLines,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                shape = shape,
+                visualTransformation = visualTransformation,
+                textStyle = textStyle,
+                onClick = onClick
+            )
         }
     }
 }
@@ -279,7 +300,8 @@ fun BoxScope.BaseOutlinedTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    onClick: () -> Unit = {}
+    textStyle: TextStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
+    onClick: () -> Unit = {},
 ) {
     var lastFocusState by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -308,7 +330,7 @@ fun BoxScope.BaseOutlinedTextField(
         },
         maxLines = maxLines,
         singleLine = maxLines == 1,
-        textStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
+        textStyle = textStyle,
         shape = shape,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
@@ -323,7 +345,7 @@ fun BoxScope.BaseOutlinedTextField(
         val modifierT = Modifier.align(Alignment.CenterStart).padding(start = startPadding, end = endPadding)
 
         Text(
-            modifier = modifierT, maxLines = maxLines, text = hint, style = MaterialTheme.typography.bodySmall.copy(color = disableContentColor)
+            modifier = modifierT, maxLines = maxLines, text = hint, style = textStyle.copy(color = disableContentColor)
         )
     }
 }
