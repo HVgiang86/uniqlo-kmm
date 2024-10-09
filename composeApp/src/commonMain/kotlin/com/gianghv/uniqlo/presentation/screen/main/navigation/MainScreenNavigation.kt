@@ -40,7 +40,7 @@ interface TopLevelScreenDestination : MainScreenDestination {
     }
 }
 
-abstract class WithParam(open val params: Map<String, Any>): MainScreenDestination {
+abstract class WithParam(open val params: Map<String, Any>) : MainScreenDestination {
     inline fun <reified T> getValue(key: String): T? {
         return params[key] as? T
     }
@@ -52,7 +52,7 @@ abstract class WithParam(open val params: Map<String, Any>): MainScreenDestinati
 }
 
 interface MainScreenDestination {
-    class ProductDetail(params: Map<String, Any>) : Screen , WithParam(params) {
+    class ProductDetail(params: Map<String, Any>) : Screen, WithParam(params) {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
@@ -75,7 +75,9 @@ interface MainScreenDestination {
             val navigator = LocalNavigator.currentOrThrow
             val viewModel: HomeViewModel = getViewModel()
             AppLogger.d("start Home Screen")
-            HomeScreen(viewModel)
+            HomeScreen(viewModel, navigateTo = {
+                navigator.navigate(it)
+            })
         }
 
         override fun getTitle() = Res.string.home.toString()
@@ -145,7 +147,6 @@ fun MainScreenNavigation(viewModel: MainViewModel) {
             navigator.pop()
 
         }) {
-//            CurrentScreen()
             AnimatedTransition(navigator)
         }
     }

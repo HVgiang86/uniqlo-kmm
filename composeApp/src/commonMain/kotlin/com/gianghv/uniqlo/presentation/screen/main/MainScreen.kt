@@ -38,7 +38,6 @@ fun MainScreen(
     onNavigateBack: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-
     Scaffold(content = {
         content()
     }, bottomBar = {

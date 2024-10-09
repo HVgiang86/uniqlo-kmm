@@ -45,11 +45,12 @@ import com.gianghv.uniqlo.presentation.screen.home.list.ListItem
 import com.gianghv.uniqlo.presentation.screen.home.list.ProductItem
 import com.gianghv.uniqlo.presentation.screen.home.navigation.HomeDestination
 import com.gianghv.uniqlo.presentation.screen.home.navigation.HomeNavigation
+import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.logging.AppLogger
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
 
     val uriHandler = LocalUriHandler.current
@@ -67,14 +68,13 @@ fun HomeScreen(viewModel: HomeViewModel) {
     }
 
     if (state.error != null) {
-        AppErrorDialog(state.error?.throwable, onDismissRequest = {
-
-        })
+        AppErrorDialog(state.error?.throwable, onDismissRequest = { })
     }
 
     val productId = productDetailId.value
     if (productId != null) {
-        HomeNavigation(HomeDestination.ProductDetail(mapOf(HomeDestination.ProductDetail.PRODUCT_ID_KEY to productId)))
+        navigateTo(MainScreenDestination.ProductDetail(mapOf(HomeDestination.ProductDetail.PRODUCT_ID_KEY to productId)))
+        productDetailId.value = null
     }
 
     Scaffold(topBar = {
