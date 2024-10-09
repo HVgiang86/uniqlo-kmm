@@ -74,9 +74,12 @@ class ProductDetailReducer(initialVal: ProductDetailUiState, private val viewMod
     }
 
     companion object {
-        private val INSTANCE: ProductDetailReducer? = null
+        private var INSTANCE: ProductDetailReducer? = null
         fun getInstance(viewModel: ProductDetailViewModel): ProductDetailReducer {
-            return INSTANCE ?: ProductDetailReducer(ProductDetailUiState.initial(), viewModel)
+            if (INSTANCE == null) {
+                INSTANCE = ProductDetailReducer(ProductDetailUiState.initial(), viewModel)
+            }
+            return INSTANCE as ProductDetailReducer
         }
     }
 }

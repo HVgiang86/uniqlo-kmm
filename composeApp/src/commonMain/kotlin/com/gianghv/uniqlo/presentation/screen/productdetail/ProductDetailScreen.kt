@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -26,12 +27,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.getScreenHeightInDp
+import com.gianghv.uniqlo.util.logging.AppLogger
+import com.github.panpf.sketch.AsyncImage
+import com.github.panpf.sketch.rememberAsyncImageState
+import com.github.panpf.sketch.request.ComposableImageOptions
+import com.github.panpf.sketch.request.placeholder
+import uniqlo.composeapp.generated.resources.Res
+import uniqlo.composeapp.generated.resources.ic_dark_uniqlo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,36 +61,49 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
         AppErrorDialog(state.error?.throwable, onDismissRequest = {})
     }
 
-    Scaffold(topBar = {
-        TopAppBar(colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent), title = {}, navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            }
-        }, actions = {
-            IconButton(onClick = onBack) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
-            }
-        })
-    }) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            val screenHeight = getScreenHeightInDp().dp
+    if (state.product != null) {
+        AppLogger.d("ProductDetailScreen: ${state.product}")
+        Scaffold(topBar = {
+            TopAppBar(colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent), title = {}, navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                }
+            }, actions = {
+                IconButton(onClick = onBack) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                }
+            })
+        }) { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                val screenHeight = getScreenHeightInDp().dp
 
-            val scrollState = rememberScrollState()
-            Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
-                ProductImagePanel(modifier = Modifier.fillMaxWidth().height(screenHeight * 0.6f))
-                ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight())
-            }
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
+                    ProductImagePanel(modifier = Modifier.fillMaxWidth().height(screenHeight * 0.6f), imageUrl = state.product?.defaultImage)
+                    ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight())
+                }
 
-            AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter))
+                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter))
+            }
         }
     }
-
 }
 
 @Composable
-fun ProductImagePanel(modifier: Modifier = Modifier) {
-    Surface(modifier = modifier, color = Color.Blue) {
+fun ProductImagePanel(modifier: Modifier = Modifier, imageUrl: String? = null) {
+    Box(modifier = modifier) {
+        var isImageLoadedSuccessfully = rememberAsyncImageState(ComposableImageOptions {
+            placeholder(Res.drawable.ic_dark_uniqlo)
+            crossfade()
+        })
 
+        AsyncImage(
+            uri = imageUrl ?: "",
+            modifier = modifier.fillMaxSize().clip(RoundedCornerShape(10.dp)),
+            state = isImageLoadedSuccessfully,
+            contentScale = ContentScale.FillBounds,
+            contentDescription = null
+        )
     }
 }
 
