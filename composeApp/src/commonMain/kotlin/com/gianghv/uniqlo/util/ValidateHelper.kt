@@ -35,7 +35,16 @@ object ValidateHelper {
 //            null
 //        }
 //    }
+
+    fun ValidateIsUrl(url: String): String? {
+        return if (url.isBlank() || !URL_PATTERN.matches(url)) {
+            "URL is invalid"
+        } else {
+            null
+        }
+    }
 }
 
+val URL_PATTERN = Regex("^(http|https|blob)://.*")
 val EMAIL_ADDRESS_PATTERN = Regex("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")
 val PASSWORD_PATTERN = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{6,}$")
