@@ -15,7 +15,8 @@ class UserMapper : DataMapper<LoginResponse, User>() {
             role = data.role,
             active = data.active,
             passwordReset = data.passwordReset,
-            birthday = data.birthday
+            birthday = data.birthday,
+            wishList = data.wishList
         )
     }
 }

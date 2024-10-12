@@ -26,6 +26,9 @@ import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailScreen
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
+import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreen
+import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreenType
+import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultViewModel
 import com.gianghv.uniqlo.presentation.screen.wishlist.WishListScreen
 import com.gianghv.uniqlo.util.logging.AppLogger
 import uniqlo.composeapp.generated.resources.Res
@@ -66,6 +69,27 @@ interface MainScreenDestination {
 
         companion object {
             const val PRODUCT_ID_KEY = "product_id_key"
+        }
+    }
+
+    class SearchResult(params: Map<String, Any>) : Screen, WithParam(params) {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val searchQuery: String? = getValue(PRODUCT_SEARCH_QUERY_KEY)
+            val screenType: SearchResultScreenType = getValue(SEARCH_RESULT_SCREEN_TYPE, SearchResultScreenType.ALL)
+            val viewModel: SearchResultViewModel = getViewModel()
+            SearchResultScreen(viewModel, onBack = {
+                navigator.pop()
+            }, searchQuery = searchQuery, navigateTo = {
+                navigator.navigate(it)
+            })
+
+        }
+
+        companion object {
+            const val PRODUCT_SEARCH_QUERY_KEY = "product_search_query"
+            const val SEARCH_RESULT_SCREEN_TYPE = "search_result_screen_type"
         }
     }
 

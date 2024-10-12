@@ -40,6 +40,15 @@ class HomeViewModel(private val productRepository: ProductRepository) : BaseView
         }
     }
 
+    fun getRecommendProduct() {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            productRepository.getAllProduct().collect {
+                reducer.sendEvent(HomeUiEvent.LoadRecommendProductSuccess(it))
+                AppLogger.d("Product list: ${it.size}")
+            }
+        }
+    }
+
 }
 
 class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel) : Reducer<HomeUiState, HomeUiEvent>(initialVal) {
@@ -56,6 +65,14 @@ class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel)
 
             is HomeUiEvent.LoadAllProductSuccess -> {
                 setState(oldState.copy(isLoading = false, error = null, productList = event.productList))
+            }
+
+            HomeUiEvent.LoadRecommendProduct -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.getRecommendProduct()
+            }
+            is HomeUiEvent.LoadRecommendProductSuccess -> {
+                setState(oldState.copy(isLoading = true, error = null, recommendProducts = event.products))
             }
         }
     }

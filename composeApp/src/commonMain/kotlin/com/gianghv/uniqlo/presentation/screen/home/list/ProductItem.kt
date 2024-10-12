@@ -143,9 +143,11 @@ fun ProductInfo(
 @Composable
 fun ProductPrice(modifier: Modifier = Modifier, product: Product) {
     val originalPrice = (product.price ?: 0.0) * 1000
-    val discountedPrice: Double = if (product.discountPercentage != null && product.price != null) {
+    var discountedPrice: Double = if (product.discountPercentage != null && product.price != null) {
         originalPrice - (originalPrice * (product.discountPercentage * 1.0 / 100))
     } else originalPrice
+
+    if (discountedPrice <= 0) discountedPrice = 0.0
 
     val originalPriceStr = originalPrice.toCurrencyText()
     val discountedPriceStr = discountedPrice.toCurrencyText()

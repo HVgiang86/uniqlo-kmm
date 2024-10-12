@@ -16,5 +16,6 @@ data class LoginResponse(
     val passwordReset: String?,
     val birthday: String?,
     val accessToken: String?,
-    val refreshToken: String?
+    val refreshToken: String?,
+    val wishList: List<Long>
 ) : BaseData()

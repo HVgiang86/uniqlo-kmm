@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -49,7 +50,11 @@ import uniqlo.composeapp.generated.resources.ic_cart
 
 @Composable
 fun HomeToolBar(
-    onSearchChange: (String) -> Unit, onSearch: (String) -> Unit, onMenuClick: () -> Unit, onCartClick: () -> Unit, searchSuggestion: List<Product> = emptyList()
+    onSearchChange: (String) -> Unit,
+    onSearch: (String) -> Unit,
+    onMenuClick: () -> Unit,
+    onCartClick: () -> Unit,
+    searchSuggestion: List<Product> = emptyList()
 ) {
     var text by rememberSaveable { mutableStateOf("") }
     var searchRequired by remember {
@@ -78,6 +83,47 @@ fun HomeToolBar(
     }
 }
 
+@Composable
+fun SearchToolBar(
+    initText: String = "",
+    onSearchChange: (String) -> Unit,
+    onSearch: (String) -> Unit,
+    onMenuClick: () -> Unit,
+    onCartClick: () -> Unit,
+    onNavigationClick: () -> Unit,
+    searchSuggestion: List<Product> = emptyList()
+) {
+    var text by rememberSaveable { mutableStateOf(initText) }
+    var searchRequired by remember {
+        mutableStateOf(false)
+    }
+
+    AnimatedContent(targetState = searchRequired) {
+        if (it) {
+            SearchAppBarTitle(text = text, searchSuggestion = searchSuggestion, onSearchTap = { textSearch ->
+                text = textSearch
+                onSearch(textSearch)
+                searchRequired = false
+            }, onCancelTap = {
+                searchRequired = false
+            }, onValueChange = { changed ->
+                text = changed
+                onSearchChange(changed)
+            })
+        } else {
+            MyAppBar(text = text, onSearch = {}, onValueChange = { changed ->
+                text = changed
+            }, onSearchTap = {
+                searchRequired = true
+            }, onMenuClick = onMenuClick, onCartClick = onCartClick, navigationIcon = {
+                IconButton(onClick = onNavigationClick) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                }
+            })
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyAppBar(
@@ -86,7 +132,8 @@ fun MyAppBar(
     onValueChange: (String) -> Unit,
     onSearchTap: () -> Unit = {},
     onMenuClick: () -> Unit = {},
-    onCartClick: () -> Unit = {}
+    onCartClick: () -> Unit = {},
+    navigationIcon: @Composable () -> Unit = {}
 ) {
     TopAppBar(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), title = {
         AppOutlinedTextField(modifier = Modifier.padding(end = 8.dp).height(52.dp).fillMaxWidth(),
@@ -111,6 +158,8 @@ fun MyAppBar(
         IconButton(onClick = onMenuClick) {
             Icon(imageVector = Icons.Default.Menu, contentDescription = null)
         }
+    }, navigationIcon = {
+        navigationIcon()
     })
 }
 
@@ -136,12 +185,17 @@ fun SearchAppBarTitle(
                     onValueChange = onValueChange,
                     imeAction = ImeAction.Search,
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                    },
-                    trailingIcon = {
                         IconButton(
                             onClick = onCancelTap
                         ) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            onValueChange("")
+                            onCancelTap()
+                        }) {
                             Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
                     },

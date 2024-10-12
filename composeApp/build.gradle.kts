@@ -38,9 +38,7 @@ kotlin {
     }
 
     listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
+        iosX64(), iosArm64(), iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
             baseName = "ComposeApp"
@@ -86,6 +84,7 @@ kotlin {
             implementation(libs.multiplatformSettings.noargs)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation("com.composables:core:1.15.0")
             implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
             implementation("io.github.dokar3:sonner:0.3.8")
         }

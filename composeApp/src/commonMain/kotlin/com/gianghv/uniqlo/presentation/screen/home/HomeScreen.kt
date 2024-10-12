@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dokar.sonner.ToastType
@@ -44,6 +44,7 @@ import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.screen.home.list.ListItem
 import com.gianghv.uniqlo.presentation.screen.home.list.ProductItem
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
+import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreenType
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.logging.AppLogger
 
@@ -54,11 +55,10 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
     val uriHandler = LocalUriHandler.current
     val searchSuggestion = mutableStateListOf<Product>()
     val toasterState = rememberToasterState()
-    val scope = rememberCoroutineScope()
-    val productDetailId = remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(HomeUiEvent.LoadAllProduct)
+//        viewModel.sendEvent(HomeUiEvent.LoadRecommendProduct)
     }
 
     if (state.isLoading) {
@@ -69,15 +69,10 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
         AppErrorDialog(state.error?.throwable, onDismissRequest = { })
     }
 
-    val productId = productDetailId.value
-    if (productId != null) {
-        navigateTo(MainScreenDestination.ProductDetail(mapOf(MainScreenDestination.ProductDetail.PRODUCT_ID_KEY to productId)))
-        productDetailId.value = null
-    }
-
     Scaffold(topBar = {
         HomeToolBar(onSearch = {
-            AppLogger.d("Search $it")
+            AppLogger.d("onSearch: $it")
+            navigateToSearchResult(navigateTo, it)
         }, onMenuClick = {
             toasterState.show(message = "Menu Clicked", type = ToastType.Info)
         }, onCartClick = {
@@ -86,9 +81,8 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
             searchSuggestion.clear()
             searchSuggestion.addAll(state.productList.filter { text -> text.name?.contains(it, ignoreCase = true) == true })
         }, searchSuggestion = searchSuggestion.toList())
-    }) {
-        val allProducts = state.productList
-        val recommendProducts = state.productList.take(3)
+    }) { it ->
+        val allProducts = state.productList.take(12)
 
         var boxWidth by remember { mutableStateOf(0.dp) }
         val density = LocalDensity.current
@@ -103,24 +97,46 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
 //
 //            })
 //
-//            RecommendProductList(modifier = Modifier.fillMaxWidth(), productList = recommendProducts, onClick = {
-//                onProductClick(it, toasterState)
+//            RecommendProductList(modifier = Modifier.fillMaxWidth(), productList = state.recommendProducts, onClick = {
+//                productDetailId.value = it.id
 //            }, onFavoriteClick = { selectedProduct, isFavorite ->
 //                onFavoriteClick(selectedProduct, isFavorite, toasterState)
 //            })
 
             HeaderRow("Popular Products", onShowMoreClicked = {
-
+                navigateToSeeMorePopularProducts(navigateTo)
             })
 
-            AllProductList(boxWidth = boxWidth, modifier = Modifier.fillMaxWidth(), productList = allProducts, onClick = {
-                productDetailId.value = it.id
+            AllProductList(boxWidth = boxWidth, modifier = Modifier.fillMaxWidth(), productList = allProducts, onClick = { product ->
+                navigateToProductDetail(navigateTo, product.id)
             }, onFavoriteClick = { selectedProduct, isFavorite ->
                 onFavoriteClick(selectedProduct, isFavorite, toasterState)
             })
         }
     }
 }
+
+fun navigateToProductDetail(navigateTo: (MainScreenDestination) -> Unit, productId: Long) =
+    navigateTo(MainScreenDestination.ProductDetail(mapOf(MainScreenDestination.ProductDetail.PRODUCT_ID_KEY to productId)))
+
+fun navigateToSearchResult(navigateTo: (MainScreenDestination) -> Unit, searchQuery: String) =
+    navigateTo(MainScreenDestination.SearchResult(mapOf(MainScreenDestination.SearchResult.PRODUCT_SEARCH_QUERY_KEY to searchQuery)))
+
+fun navigateToSeeMorePopularProducts(navigateTo: (MainScreenDestination) -> Unit) = navigateTo(
+    MainScreenDestination.SearchResult(
+        mapOf(
+            MainScreenDestination.SearchResult.SEARCH_RESULT_SCREEN_TYPE to SearchResultScreenType.ALL
+        )
+    )
+)
+
+fun navigateToSeeMoreRecommendProducts(navigateTo: (MainScreenDestination) -> Unit) = navigateTo(
+    MainScreenDestination.SearchResult(
+        mapOf(
+            MainScreenDestination.SearchResult.SEARCH_RESULT_SCREEN_TYPE to SearchResultScreenType.RECOMMEND
+        )
+    )
+)
 
 fun onFavoriteClick(product: Product, isFavorite: Boolean, toasterState: ToasterState) {
     toasterState.show(message = "${product.name} favorite clicked", type = ToastType.Info)
@@ -169,6 +185,15 @@ fun AllProductList(
                 })
             }
         }
+    } else {
+        EmptyScreen()
+    }
+}
+
+@Composable
+fun EmptyScreen() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Text("Empty", modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleLarge)
     }
 }
 

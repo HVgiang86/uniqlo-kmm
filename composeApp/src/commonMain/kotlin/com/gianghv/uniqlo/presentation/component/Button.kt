@@ -1,5 +1,6 @@
 package com.gianghv.uniqlo.presentation.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -89,13 +90,18 @@ fun FilledTextButton(
 
 @Composable
 fun BaseOutlinedButton(
-    onClick: () -> Unit, text: @Composable () -> Unit, modifier: Modifier = Modifier, enable: Boolean = true, colors: ButtonColors = ButtonDefaults.textButtonColors()
+    onClick: () -> Unit,
+    text: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    enable: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.textButtonColors(),
+    borderStroke: BorderStroke? = ButtonDefaults.outlinedButtonBorder(true),
 ) {
     OutlinedButton(onClick = {
         onClick.invoke()
     }, shape = RoundedCornerShape(8.dp), modifier = modifier, colors = colors, enabled = enable, content = {
         text()
-    })
+    }, border = borderStroke)
 }
 
 @Composable

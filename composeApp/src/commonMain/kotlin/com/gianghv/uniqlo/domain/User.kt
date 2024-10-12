@@ -13,6 +13,7 @@ data class User(
     val role: String = "user",
     val active: Boolean = true,
     val passwordReset: String?,
-    val birthday: String?
+    val birthday: String?,
+    val wishList: List<Long>? = emptyList(),
 ): BaseModel()
 

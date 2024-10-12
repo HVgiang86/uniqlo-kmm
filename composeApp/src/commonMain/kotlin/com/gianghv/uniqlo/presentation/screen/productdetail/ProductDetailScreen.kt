@@ -7,8 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,28 +17,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,23 +44,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gianghv.uniqlo.domain.Image
 import com.gianghv.uniqlo.domain.Product
 import com.gianghv.uniqlo.domain.ProductVariation
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
+import com.gianghv.uniqlo.presentation.component.BaseOutlinedButton
+import com.gianghv.uniqlo.presentation.component.ExpandableText
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
-import com.gianghv.uniqlo.theme.Orange
-import com.gianghv.uniqlo.theme.Silver
+import com.gianghv.uniqlo.presentation.component.MyBottomSheet
+import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.util.ValidateHelper
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.round
@@ -124,7 +122,7 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                     ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight(), product = product)
                 }
 
-//                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter))
+                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter))
             }
         }
     }
@@ -154,7 +152,8 @@ fun ProductImagePanel(modifier: Modifier = Modifier, images: List<Image>? = empt
         val coroutineScope = rememberCoroutineScope()
 
         if ((filteredImages?.size ?: 0) > 1) {
-            ProductImagePagerIndicator(modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
+            ProductImagePagerIndicator(
+                modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
                 pagerState = pagerState,
                 onClickIndicator = { index ->
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
@@ -208,34 +207,53 @@ fun ProductImagePagerIndicator(
 
 @Composable
 fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
+    var variationSelectState by remember {
+        mutableStateOf<ProductVariation?>(null)
+    }
+
+    var sizeSelectState by remember {
+        mutableStateOf<VariationSize?>(null)
+    }
+
     Column(
         modifier = modifier.padding(16.dp).fillMaxWidth().wrapContentHeight()
     ) {
-        Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+
+        Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             Text(
-                text = "Long Sleeve T-Shirt. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vulputate suscipit deserunt sea voluptua duis, praesent delenit praesent tempor enim, eum aliquid adipiscing qui accusam tempor possim ea molestie proident culpa, soluta hendrerit tincidunt erat lorem doming quis soluta sea duo iure ea. Tincidunt eleifend tation, odio cum ullamco consequat elitr pariatur enim sanctus erat non tincidunt elitr laoreet minim eos culpa nihil, placerat culpa enim luptatum id soluta excepteur no consetetur eirmod lobortis tempor eiusmod amet adipiscing dignissim lorem aliquam. Mazim sea at hendrerit aliquid. Non accusam esse.\n",
+                text = product.name.toString(),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Black,
                 maxLines = 3,
                 minLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(end = 48.dp).fillMaxWidth().wrapContentHeight()
+                modifier = Modifier.fillMaxSize().padding(end = 48.dp),
+                textAlign = TextAlign.Justify
             )
 
-            Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null, tint = Color.Gray)
+            IconButton(modifier = Modifier.size(24.dp).align(Alignment.TopEnd), onClick = {}) {
+                Icon(
+                    imageVector = Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Men",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            minLines = 1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        val categoryName = product.category?.name
+        if (categoryName != null) {
+            Text(
+                text = categoryName,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                minLines = 1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -243,18 +261,95 @@ fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
 
         ProductRating(product = product)
 
-        ProductVariationPreview()
+        Spacer(modifier = Modifier.height(16.dp))
 
-        product.variations?.let { ProductVariationPanel(variations = it) }
+        Text("Select size", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        ProductSizeSelectSection(selected = sizeSelectState, onSelect = {
+            sizeSelectState = it
+        })
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Select color", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        val variations = product.variations?.distinctBy { variation -> variation.color?.lowercase() }
+        variations?.let {
+            ProductColorSelectSection(variations = it, selected = variationSelectState, onSelect = { selectedVariation ->
+                variationSelectState = selectedVariation
+            })
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val brand = product.brand
+
+        if (brand != null) {
+            BrandBar(modifier = Modifier.fillMaxWidth(), brand = brand, onClick = {
+
+            })
+        }
+
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp))
+
+        val description = product.description
+        if (!description.isNullOrEmpty()) {
+            Text("Description", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+
+            ExpandableText(
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 13.sp,
+                text = description,
+                modifier = Modifier.padding(end = 48.dp).fillMaxWidth().wrapContentHeight(),
+                textAlign = TextAlign.Justify
+            )
+        }
+
+        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 
 
 @Composable
 fun AddToCartPanel(modifier: Modifier) {
-    Surface(modifier = modifier, color = Color.Green) {
-
+    Row(modifier = modifier.background(color = Color.Transparent)) {
+        AddToCartButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = true, onClick = {})
+        OrderNowButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = true) { }
     }
+}
+
+@Composable
+fun AddToCartButton(modifier: Modifier = Modifier, enable: Boolean = false, onClick: () -> Unit) {
+    if (enable) {
+        BaseOutlinedButton(
+            onClick = onClick,
+            text = {
+                Text(text = "Add to Cart", color = MaterialTheme.colorScheme.primary)
+            },
+            modifier = modifier.height(52.dp),
+            enable = true,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary, containerColor = Color.White),
+            borderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        )
+    }
+}
+
+@Composable
+fun OrderNowButton(modifier: Modifier = Modifier, enable: Boolean = false, onClick: () -> Unit) {
+    if (enable) {
+        RedFilledTextButton(modifier = modifier.height(52.dp), onClick = onClick) {
+            Text(text = "Checkout", color = Color.White)
+        }
+    }
+}
+
+@Composable
+fun PickVariantBottomSheet() {
+    MyBottomSheet()
 }
 
 @Composable
@@ -338,138 +433,6 @@ fun ProductRating(modifier: Modifier = Modifier, product: Product) {
 }
 
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ProductVariationPreview() {
-    Text(text = "Select Size")
 
-    val sizeSelectState = remember { mutableStateOf<VariationSize?>(null) }
 
-    FlowRow {
-        val sizeList = listOf(VariationSize.XS, VariationSize.S, VariationSize.M, VariationSize.L, VariationSize.XL, VariationSize.XXL)
 
-        sizeList.forEach { size ->
-            VariationSizeButton(size = size, isSelected = size == sizeSelectState.value, onSelected = {
-                sizeSelectState.value = it
-            })
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun ProductVariationPanel(variations: List<ProductVariation>) {
-    Text(text = "Select Color")
-
-    val colorSelectState = remember { mutableStateOf<ProductVariation?>(null) }
-
-    FlowRow {
-        variations.forEach { variation ->
-            VariationColorButton(variation = variation, isSelected = variation == colorSelectState.value, onSelected = {
-                colorSelectState.value = it
-            })
-        }
-    }
-}
-
-@Composable
-fun VariationColorButton(variation: ProductVariation, isSelected: Boolean, onSelected: (ProductVariation) -> Unit) {
-    if (variation.color == null) return
-    val color = variation.color.toVariationColor()
-
-    val gradientBrush = Brush.linearGradient(
-        colors = listOf(Color(0xFF800080), Color(0xFFDA70D6)) // Purple to Orchid gradient
-    )
-    val unselectedColor = Color.Gray
-
-    val outlineBrush = if (isSelected) gradientBrush else Brush.linearGradient(listOf(unselectedColor, unselectedColor))
-    val textColor = color.getTextColor()
-
-    val selectedIndicatorColor = if (color == VariationColor.RED) Color.White else Color.Red
-    val selectedIndicatorIconColor = if (color == VariationColor.RED) Color.Red else Color.White
-
-    Box(modifier = Modifier.wrapContentSize().padding(4.dp)) {
-        OutlinedButton(
-            onClick = {
-                onSelected(variation)
-            },
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(2.dp, outlineBrush),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor, containerColor = color.color)
-        ) {
-            Text(text = variation.color.uppercase(), color = textColor)
-        }
-
-        if (isSelected) {
-            Box(
-                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 2.dp).background(selectedIndicatorColor)
-                    .clip(RoundedCornerShape(10.dp))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = selectedIndicatorIconColor,
-                    modifier = Modifier.size(16.dp).align(Alignment.TopEnd)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun VariationSizeButton(size: VariationSize, isSelected: Boolean, onSelected: (VariationSize) -> Unit) {
-    val selectedColor = MaterialTheme.colorScheme.primary
-    val unselectedColor = Color.Gray
-
-    val outlineColor = if (isSelected) selectedColor else unselectedColor
-    val textColor = if (isSelected) Color.White else Color.Black
-    val backgroundColor = if (isSelected) selectedColor else Color.Transparent
-
-    OutlinedButton(
-        onClick = {
-            onSelected(size)
-        },
-        modifier = Modifier.padding(4.dp),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, outlineColor),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor, containerColor = backgroundColor)
-    ) {
-        Text(text = size.name.uppercase(), color = textColor)
-    }
-}
-
-enum class VariationColor(val color: Color) {
-    BLUE(Color.Blue), GREY(Color.Gray), BLACK(Color.Black), YELLOW(Color.Yellow), RED(Color.Red), WHITE(Color.White), PINK(Color.Magenta), SILVER(Silver), GREEN(
-        Color.Green
-    ),
-    ORANGE(Orange), PURPLE(Color(0xFF800080)), GRAY(Color.Gray), OTHER(Color.White)
-}
-
-fun VariationColor.getTextColor(): Color {
-    return when (this) {
-        VariationColor.BLACK, VariationColor.BLUE, VariationColor.GREY, VariationColor.RED, VariationColor.PURPLE -> Color.White
-        else -> Color.Black
-    }
-}
-
-fun String.toVariationColor(): VariationColor {
-    return when (this.lowercase()) {
-        "blue" -> VariationColor.BLUE
-        "grey" -> VariationColor.GREY
-        "black" -> VariationColor.BLACK
-        "yellow" -> VariationColor.YELLOW
-        "red" -> VariationColor.RED
-        "white" -> VariationColor.WHITE
-        "ping" -> VariationColor.PINK
-        "silver" -> VariationColor.SILVER
-        "green" -> VariationColor.GREEN
-        "orange" -> VariationColor.ORANGE
-        "purple" -> VariationColor.PURPLE
-        "gray" -> VariationColor.GRAY
-        else -> VariationColor.OTHER
-    }
-}
-
-enum class VariationSize(val size: String) {
-    XS("XS"), S("S"), M("M"), L("L"), XL("XL"), XXL("XXL"),
-}
