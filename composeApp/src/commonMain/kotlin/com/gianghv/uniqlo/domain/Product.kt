@@ -18,5 +18,6 @@ data class Product(
     val brand: Brand? = null,
     val images: List<Image>? = emptyList(),
     val variations: List<ProductVariation>? = emptyList(),
-    val category: Category? = null
+    val category: Category? = null,
+    val isFavorite: Boolean = false
 ) : BaseModel()

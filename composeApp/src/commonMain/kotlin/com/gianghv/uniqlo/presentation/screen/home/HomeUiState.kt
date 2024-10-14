@@ -10,7 +10,8 @@ data class HomeUiState(
     override val isLoading: Boolean,
     override val error: ErrorState?,
     val productList: List<Product> = emptyList(),
-    val recommendProducts: List<Product> = emptyList()
+    val recommendProducts: List<Product> = emptyList(),
+    val cartCount : Int = 0
 ) : Reducer.UiState(isLoading, error) {
     companion object {
         fun initial() = HomeUiState(

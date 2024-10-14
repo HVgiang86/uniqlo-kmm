@@ -1,4 +1,4 @@
-package com.gianghv.uniqlo.presentation.screen.productdetail
+package com.gianghv.uniqlo.presentation.screen.productdetail.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

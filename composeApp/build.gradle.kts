@@ -80,7 +80,6 @@ kotlin {
             implementation(libs.composeIcons.featherIcons)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.multiplatformSettings)
             implementation(libs.multiplatformSettings.noargs)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -101,6 +100,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
             api(libs.koin.android)
+            implementation ("androidx.datastore:datastore-preferences:1.0.0")
         }
 
         iosMain.dependencies {

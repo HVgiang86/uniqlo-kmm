@@ -1,6 +1,7 @@
 package com.gianghv.uniqlo.di
 
 import com.gianghv.uniqlo.constant.NETWORK_TIMEOUT
+import com.gianghv.uniqlo.data.source.remote.api.CartApi
 import com.gianghv.uniqlo.data.source.remote.api.ProductApi
 import com.gianghv.uniqlo.data.source.remote.api.UserApi
 import com.gianghv.uniqlo.util.logging.AppLogger
@@ -59,5 +60,6 @@ val networkModule = module {
 val apiServiceModule = module {
     factory { UserApi(get()) }
     factory { ProductApi(get()) }
+    factory { CartApi(get()) }
 }
 

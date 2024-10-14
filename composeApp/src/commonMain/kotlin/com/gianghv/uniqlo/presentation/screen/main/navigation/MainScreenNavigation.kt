@@ -19,6 +19,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.gianghv.uniqlo.base.getViewModel
 import com.gianghv.uniqlo.presentation.screen.aichat.AIChatScreen
+import com.gianghv.uniqlo.presentation.screen.cart.CartScreen
+import com.gianghv.uniqlo.presentation.screen.cart.CartViewModel
 import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
 import com.gianghv.uniqlo.presentation.screen.home.HomeViewModel
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
@@ -26,11 +28,12 @@ import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailScreen
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
+import com.gianghv.uniqlo.presentation.screen.profile.ProfileViewModel
 import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreen
 import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreenType
 import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultViewModel
 import com.gianghv.uniqlo.presentation.screen.wishlist.WishListScreen
-import com.gianghv.uniqlo.util.logging.AppLogger
+import com.gianghv.uniqlo.presentation.screen.wishlist.WishListViewModel
 import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.ai_chat
 import uniqlo.composeapp.generated.resources.home
@@ -54,6 +57,8 @@ abstract class WithParam(open val params: Map<String, Any>) : MainScreenDestinat
     }
 }
 
+abstract class LogoutFromDestination(open var onLogout: (() -> Unit)? = null) : MainScreenDestination
+
 interface MainScreenDestination {
     class ProductDetail(params: Map<String, Any>) : Screen, WithParam(params) {
         @Composable
@@ -63,7 +68,9 @@ interface MainScreenDestination {
             val viewModel: ProductDetailViewModel = getViewModel()
             ProductDetailScreen(viewModel, onBack = {
                 navigator.pop()
-            }, productId = productId)
+            }, productId = productId, navigateTo = {
+                navigator.navigate(it)
+            })
 
         }
 
@@ -81,7 +88,7 @@ interface MainScreenDestination {
             val viewModel: SearchResultViewModel = getViewModel()
             SearchResultScreen(viewModel, onBack = {
                 navigator.pop()
-            }, searchQuery = searchQuery, navigateTo = {
+            }, screenType = screenType, searchQuery = searchQuery, navigateTo = {
                 navigator.navigate(it)
             })
 
@@ -93,12 +100,22 @@ interface MainScreenDestination {
         }
     }
 
+    object Cart : Screen, MainScreenDestination {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val viewModel: CartViewModel = getViewModel()
+            CartScreen(viewModel, onBack = {
+                navigator.pop()
+            })
+        }
+    }
+
     object Home : Screen, TopLevelScreenDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
             val viewModel: HomeViewModel = getViewModel()
-            AppLogger.d("start Home Screen")
             HomeScreen(viewModel, navigateTo = {
                 navigator.navigate(it)
             })
@@ -111,11 +128,13 @@ interface MainScreenDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            WishListScreen()
+            val viewModel: WishListViewModel = getViewModel()
+            WishListScreen(viewModel, navigateTo = {
+                navigator.navigate(it)
+            })
         }
 
         override fun getTitle() = Res.string.wishlist.toString()
-
     }
 
     object AiChat : Screen, TopLevelScreenDestination {
@@ -128,12 +147,18 @@ interface MainScreenDestination {
         override fun getTitle() = Res.string.ai_chat.toString()
     }
 
-    object Profile : Screen, TopLevelScreenDestination {
+    class Profile : Screen, TopLevelScreenDestination, LogoutFromDestination() {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            ProfileScreen()
+            val viewModel: ProfileViewModel = getViewModel()
+            ProfileScreen(viewModel, navigateTo = {
+                navigator.navigate(it)
+            }, onLogout = {
+                onLogout?.let { it() }
+            })
         }
+
 
         override fun getTitle() = Res.string.profile.toString()
     }
@@ -159,8 +184,9 @@ fun Navigator.navigate(destination: MainScreenDestination) {
     }
 }
 
+
 @Composable
-fun MainScreenNavigation(viewModel: MainViewModel) {
+fun MainScreenNavigation(viewModel: MainViewModel, onLogout: () -> Unit) {
     val startScreen = TopLevelScreenDestination.getStartScreen() as Screen
     Navigator(screen = startScreen) { navigator ->
         val currentScreen = navigator.lastItem
@@ -169,7 +195,8 @@ fun MainScreenNavigation(viewModel: MainViewModel) {
             navigator.navigate(it)
         }, onNavigateBack = {
             navigator.pop()
-
+        }, onLogout = {
+            onLogout()
         }) {
             AnimatedTransition(navigator)
         }

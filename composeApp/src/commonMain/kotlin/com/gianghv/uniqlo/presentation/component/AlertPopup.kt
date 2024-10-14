@@ -44,6 +44,7 @@ fun MyAlertDialog(
             if (rightBtn != null) {
                 Button(onClick = {
                     // Handle confirm button click here
+                    rightBtn.invoke()
                     openDialog.value = false
                 }, shape = RoundedCornerShape(8.dp)) {
                     Text(rightBtnTitle)

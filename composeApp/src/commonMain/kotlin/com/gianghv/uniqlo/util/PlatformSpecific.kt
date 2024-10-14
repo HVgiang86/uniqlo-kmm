@@ -2,6 +2,7 @@ package com.gianghv.uniqlo.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -13,4 +14,6 @@ interface AppVersion {
     fun name(): String
 }
 
-expect fun isAndroid():Boolean
+expect fun isAndroid(): Boolean
+
+expect fun createSettings(): Settings

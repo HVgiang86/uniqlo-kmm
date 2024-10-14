@@ -2,13 +2,10 @@ package com.gianghv.uniqlo.coredata
 
 import coil3.network.HttpException
 import com.gianghv.uniqlo.util.logging.AppLogger
-import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.serialization.MissingFieldException
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
@@ -68,8 +65,35 @@ abstract class BaseDataSource : KoinComponent {
         }
     }
 
+    protected suspend fun <R> returnIf(
+        condition: (R) -> Boolean, block: suspend () -> BaseResponse<R>
+    ): Result<Boolean> {
+        try {
+            val response = block.invoke()
+            if (response.code in 200..299) {
+                if (!response.isSuccessful()) {
+                    return Result.Error(Exception(response.message))
+                }
+
+                val result = response.getSuccessfulData()
+                println("[DEBUG] $result")
+
+                if (condition(result)) {
+                    return Result.Success(true)
+                } else {
+                    return Result.Error(Exception("Condition not met"))
+                }
+            } else {
+                return Result.Error(Exception(response.message))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return Result.Error(e)
+        }
+    }
+
     protected suspend fun <R> resultT(
-         block: suspend () -> String,
+        block: suspend () -> String,
     ): Result<R> {
         var rawResponse: String? = null
         var statusCode: Int? = null
@@ -103,8 +127,7 @@ abstract class BaseDataSource : KoinComponent {
             } else {
                 return Result.Error(Exception(response.message))
             }
-        }
-        catch (e: JsonConvertException) {
+        } catch (e: JsonConvertException) {
             if (statusCode != null && message != null) {
                 return Result.Error(Exception("[$statusCode] $message"))
             }

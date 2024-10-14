@@ -1,4 +1,4 @@
-package com.gianghv.uniqlo.presentation.screen.productdetail
+package com.gianghv.uniqlo.presentation.screen.productdetail.components
 
 import androidx.compose.ui.graphics.Color
 import com.gianghv.uniqlo.theme.Orange

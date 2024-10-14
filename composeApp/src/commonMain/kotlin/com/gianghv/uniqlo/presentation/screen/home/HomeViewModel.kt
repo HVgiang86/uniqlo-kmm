@@ -4,14 +4,19 @@ import com.gianghv.uniqlo.base.BaseViewModel
 import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
+import com.gianghv.uniqlo.data.CartRepository
 import com.gianghv.uniqlo.data.ProductRepository
-import com.gianghv.uniqlo.util.logging.AppLogger
+import com.gianghv.uniqlo.data.UserRepository
+import com.gianghv.uniqlo.data.WholeApp
+import com.gianghv.uniqlo.domain.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val productRepository: ProductRepository) : BaseViewModel<HomeUiState, HomeUiEvent>() {
+class HomeViewModel(private val productRepository: ProductRepository, private val userRepository: UserRepository, private val cartRepository: CartRepository) :
+    BaseViewModel<HomeUiState, HomeUiEvent>() {
     private val _reducer = HomeReducer(HomeUiState.initial(), this)
 
     override val state: StateFlow<HomeUiState>
@@ -33,22 +38,51 @@ class HomeViewModel(private val productRepository: ProductRepository) : BaseView
 
     fun getAllProduct() {
         uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
-            productRepository.getAllProduct().collect {
+            productRepository.getAllProduct().combine(userRepository.getWishlist(WholeApp.USER_ID)) { products, wishlist ->
+                products.map { product ->
+                    product.copy(isFavorite = wishlist.contains(product.id))
+                }
+            }.collect {
                 reducer.sendEvent(HomeUiEvent.LoadAllProductSuccess(it))
-                AppLogger.d("Product list: ${it.size}")
             }
         }
     }
 
     fun getRecommendProduct() {
         uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
-            productRepository.getAllProduct().collect {
+            productRepository.getAllProduct().combine(productRepository.getUserRecommendProduct(WholeApp.USER_ID)) { products, recommendList ->
+                products.filter { product ->
+                    recommendList.contains(product.id)
+                }.take(10)
+            }.combine(userRepository.getWishlist(WholeApp.USER_ID)) { recommendedProducts, wishlist ->
+                recommendedProducts.map { product ->
+                    product.copy(isFavorite = wishlist.contains(product.id))
+                }
+            }.collect {
                 reducer.sendEvent(HomeUiEvent.LoadRecommendProductSuccess(it))
-                AppLogger.d("Product list: ${it.size}")
             }
         }
     }
 
+    fun setFavorite(product: Product, isFavorite: Boolean) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            userRepository.changeWishlist(WholeApp.USER_ID, product.id, isFavorite).collect {
+                if (it) {
+                    reducer.sendEvent(HomeUiEvent.SetFavoriteSuccess(product, isFavorite))
+                } else {
+                    reducer.sendEvent(HomeUiEvent.SetFavoriteSuccess(product, !isFavorite))
+                }
+            }
+        }
+    }
+
+    fun loadCartCount() {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            cartRepository.getCartItems(WholeApp.USER_ID).collect {
+                reducer.sendEvent(HomeUiEvent.LoadCartCountSuccess(it.size))
+            }
+        }
+    }
 }
 
 class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel) : Reducer<HomeUiState, HomeUiEvent>(initialVal) {
@@ -71,8 +105,52 @@ class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel)
                 setState(oldState.copy(isLoading = true, error = null))
                 viewModel.getRecommendProduct()
             }
+
             is HomeUiEvent.LoadRecommendProductSuccess -> {
-                setState(oldState.copy(isLoading = true, error = null, recommendProducts = event.products))
+                setState(oldState.copy(isLoading = false, error = null, recommendProducts = event.products))
+            }
+
+            is HomeUiEvent.SetFavorite -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.setFavorite(event.product, event.isFavorite)
+            }
+
+            is HomeUiEvent.SetFavoriteSuccess -> {
+                val product = event.product
+                val isFavorite = event.isFavorite
+
+                val products = oldState.productList.map {
+                    if (it.id == product.id) {
+                        it.copy(isFavorite = isFavorite)
+                    } else {
+                        it
+                    }
+                }
+
+                val recommendProducts = oldState.recommendProducts.map {
+                    if (it.id == product.id) {
+                        it.copy(isFavorite = isFavorite)
+                    } else {
+                        it
+                    }
+                }
+
+                setState(oldState.copy(isLoading = false, error = null, productList = products, recommendProducts = recommendProducts))
+            }
+
+            HomeUiEvent.LoadCartCount -> {
+                viewModel.loadCartCount()
+            }
+
+            is HomeUiEvent.LoadCartCountSuccess -> {
+                setState(oldState.copy(cartCount = event.count))
+            }
+
+            HomeUiEvent.Refresh -> {
+                setState(HomeUiState.initial().copy(isLoading = true))
+                viewModel.getAllProduct()
+                viewModel.getRecommendProduct()
+                viewModel.loadCartCount()
             }
         }
     }

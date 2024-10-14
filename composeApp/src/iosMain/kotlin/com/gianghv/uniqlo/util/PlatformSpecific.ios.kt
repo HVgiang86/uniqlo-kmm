@@ -4,8 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.Font
+import com.russhwolf.settings.NSUserDefaultsSettings
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.StateFlow
 import platform.Foundation.NSBundle
+import platform.Foundation.NSUserDefaults
 
 private val cache: MutableMap<String, Font> = mutableMapOf()
 
@@ -31,3 +34,6 @@ internal class IosAppVersion : AppVersion {
 }
 
 actual fun isAndroid() = false
+actual fun createSettings(): Settings {
+    return NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)
+}

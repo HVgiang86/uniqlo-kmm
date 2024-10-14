@@ -1,4 +1,4 @@
-package com.gianghv.uniqlo.presentation.screen.searchresult
+package com.gianghv.uniqlo.presentation.screen.searchresult.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +24,7 @@ import com.composables.core.MenuButton
 import com.composables.core.MenuContent
 import com.composables.core.MenuItem
 import com.composables.core.rememberMenuState
-import com.gianghv.uniqlo.presentation.screen.productdetail.VariationSize
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSize
 
 @Composable
 fun FilterSize(selectedSize: VariationSize?, sizeList: List<VariationSize> = emptyList(), onSizeSelected: (VariationSize?) -> Unit) {

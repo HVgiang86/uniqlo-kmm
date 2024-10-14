@@ -20,7 +20,7 @@ enum class BottomNavItem(val iconRes: DrawableResource) {
             HOME -> MainScreenDestination.Home
             WISH_LIST -> MainScreenDestination.WishList
             AI_CHAT -> MainScreenDestination.AiChat
-            PROFILE -> MainScreenDestination.Profile
+            PROFILE -> MainScreenDestination.Profile()
         }
     }
 }
@@ -30,7 +30,7 @@ fun MainScreenDestination.asBottomNavItem(): BottomNavItem {
         MainScreenDestination.Home -> BottomNavItem.HOME
         MainScreenDestination.WishList -> BottomNavItem.WISH_LIST
         MainScreenDestination.AiChat -> BottomNavItem.AI_CHAT
-        MainScreenDestination.Profile -> BottomNavItem.PROFILE
+        is MainScreenDestination.Profile -> BottomNavItem.PROFILE
         else -> BottomNavItem.HOME
     }
 }

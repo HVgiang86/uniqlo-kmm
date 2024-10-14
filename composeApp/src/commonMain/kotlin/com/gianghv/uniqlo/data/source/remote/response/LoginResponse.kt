@@ -13,9 +13,8 @@ data class LoginResponse(
     val gender: String = "other",
     val role: String = "user",
     val active: Boolean = true,
-    val passwordReset: String?,
     val birthday: String?,
     val accessToken: String?,
     val refreshToken: String?,
-    val wishList: List<Long>
+    val wishlists: List<Long>?
 ) : BaseData()

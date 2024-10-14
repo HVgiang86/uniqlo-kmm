@@ -47,7 +47,14 @@ class AuthViewModel(private val userRepository: UserRepository, private val appR
                     appRepository.setLoggedIn(true)
 
                     runBlocking {
+                        AppLogger.d("ToSave User id: ${it.id}")
                         appRepository.setUserId(it.id)
+
+
+                    }
+
+                    runBlocking {
+                        AppLogger.d("User id: ${appRepository.getUserId()}")
                     }
 
                     reducer.sendEvent(AuthEvent.NavigateMain)

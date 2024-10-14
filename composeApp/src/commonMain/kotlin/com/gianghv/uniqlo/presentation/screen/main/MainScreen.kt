@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gianghv.uniqlo.presentation.screen.main.navigation.LogoutFromDestination
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenNavigation
 import com.gianghv.uniqlo.presentation.screen.main.navigation.isTopLevelScreen
@@ -25,8 +26,8 @@ import org.jetbrains.compose.resources.painterResource
 
 
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
-    MainScreenNavigation(viewModel)
+fun MainScreen(viewModel: MainViewModel, onLogout: () -> Unit) {
+    MainScreenNavigation(viewModel, onLogout)
 }
 
 @Composable
@@ -36,9 +37,9 @@ fun MainScreen(
     currentDestination: MainScreenDestination,
     onDestinationChanged: (MainScreenDestination) -> Unit,
     onNavigateBack: () -> Unit,
-    content: @Composable () -> Unit,
+    onLogout: () -> Unit,
+    content: @Composable () -> Unit
 ) {
-
     Scaffold(content = {
         content()
     }, bottomBar = {
@@ -46,6 +47,10 @@ fun MainScreen(
             BottomNavigation(selectedNavItem = currentDestination.asBottomNavItem(), onNavigationItemSelected = {
                 onDestinationChanged(it.asTopLevelDestination())
             })
+
+            if (currentDestination is LogoutFromDestination) {
+                currentDestination.onLogout = onLogout
+            }
         }
     })
 }

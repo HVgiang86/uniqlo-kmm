@@ -21,6 +21,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +48,7 @@ import uniqlo.composeapp.generated.resources.ic_dark_uniqlo
 
 @Composable
 fun ProductItem(modifier: Modifier = Modifier, product: Product, onClick: (Product) -> Unit, onFavoriteClick: (Product, isFavorite: Boolean) -> Unit) {
-    val isFavorite = false
+    val isFavorite = product.isFavorite
 
     Card(
         modifier = modifier.clickable {
@@ -66,7 +68,9 @@ fun ProductItem(modifier: Modifier = Modifier, product: Product, onClick: (Produ
                 ProductInfo(product = product)
             }
 
-            IconButton(onClick = {
+            IconButton(
+//                colors = IconButtonDefaults.iconButtonColors().copy(containerColor = Color.LightGray),
+                onClick = {
                 onFavoriteClick(product, !isFavorite)
             }, modifier = Modifier.align(Alignment.TopEnd)) {
                 if (isFavorite) Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null, tint = Color.Red)
@@ -78,8 +82,7 @@ fun ProductItem(modifier: Modifier = Modifier, product: Product, onClick: (Produ
 
 @Composable
 fun ProductImage(modifier: Modifier = Modifier, product: Product) {
-
-    var isImageLoadedSuccessfully = rememberAsyncImageState(ComposableImageOptions {
+    val isImageLoadedSuccessfully = rememberAsyncImageState(ComposableImageOptions {
         placeholder(Res.drawable.ic_dark_uniqlo)
         crossfade()
     })
@@ -91,7 +94,6 @@ fun ProductImage(modifier: Modifier = Modifier, product: Product) {
         contentScale = ContentScale.Crop,
         contentDescription = null
     )
-
 }
 
 @Composable

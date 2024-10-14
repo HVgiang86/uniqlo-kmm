@@ -12,10 +12,6 @@ class ProductRepositoryImpl(private val productRemote: ProductDataSource) : Prod
         productRemote.getAllProduct()
     }
 
-    override suspend fun getRecommendProduct(): Flow<List<Product>> = flowContext {
-        productRemote.getRecommendProduct()
-    }
-
     override suspend fun getProductDetail(productId: Long): Flow<Product> = flowContext {
         productRemote.getProductDetail(productId.toString())
     }
@@ -23,6 +19,18 @@ class ProductRepositoryImpl(private val productRemote: ProductDataSource) : Prod
     override suspend fun searchProduct(query: String): Flow<List<Product>> = flowContext {
         productRemote.getAllProduct().mapDataOnSuccess {
             it.filter { product -> product.name?.lowercase()?.contains(query.lowercase()) == true }
+        }
+    }
+
+    override suspend fun getSimilarProduct(productId: Long): Flow<List<Long>> = flowContext {
+        productRemote.getSimilarityProduct(productId).mapDataOnSuccess {
+            it.map { product -> product.productId }
+        }
+    }
+
+    override suspend fun getUserRecommendProduct(userId: Long): Flow<List<Long>> = flowContext {
+        productRemote.getUserRecommendProduct(userId).mapDataOnSuccess {
+            it.map { product -> product.productId }
         }
     }
 }

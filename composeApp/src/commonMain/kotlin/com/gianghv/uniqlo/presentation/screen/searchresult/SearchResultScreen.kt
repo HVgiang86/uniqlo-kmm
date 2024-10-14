@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,14 +33,22 @@ import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.component.SearchToolBar
 import com.gianghv.uniqlo.presentation.screen.home.AllProductList
-import com.gianghv.uniqlo.presentation.screen.home.onFavoriteClick
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
-import com.gianghv.uniqlo.presentation.screen.productdetail.VariationSize
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSize
+import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterColor
+import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterPrice
+import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterSize
 import com.gianghv.uniqlo.util.asState
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SearchResultScreen(viewModel: SearchResultViewModel, searchQuery: String? = null, onBack: () -> Unit, navigateTo: (MainScreenDestination) -> Unit) {
+fun SearchResultScreen(
+    viewModel: SearchResultViewModel,
+    searchQuery: String? = null,
+    screenType: SearchResultScreenType,
+    onBack: () -> Unit,
+    navigateTo: (MainScreenDestination) -> Unit
+) {
     val state by viewModel.state.asState()
     val toasterState = rememberToasterState()
     val searchSuggestion = mutableStateListOf<Product>()
@@ -47,7 +56,11 @@ fun SearchResultScreen(viewModel: SearchResultViewModel, searchQuery: String? = 
 
     LaunchedEffect(Unit) {
         val toSearch = searchQuery ?: ""
-        viewModel.sendEvent(SearchResultUiEvent.SearchForProduct(toSearch, state.filterState))
+        if (screenType == SearchResultScreenType.ALL) {
+            viewModel.sendEvent(SearchResultUiEvent.SearchForProduct(toSearch, state.filterState))
+        } else {
+            viewModel.sendEvent(SearchResultUiEvent.GetRecommendProduct(state.filterState))
+        }
     }
 
     if (state.isLoading) {
@@ -70,7 +83,7 @@ fun SearchResultScreen(viewModel: SearchResultViewModel, searchQuery: String? = 
         }, onMenuClick = {
             toasterState.show(message = "Menu Clicked", type = ToastType.Info)
         }, onCartClick = {
-            toasterState.show(message = "Cart Clicked", type = ToastType.Info)
+            navigateTo(MainScreenDestination.Cart)
         }, onSearchChange = {
             searchSuggestion.clear()
             searchSuggestion.addAll(state.productList.filter { text -> text.name?.contains(it, ignoreCase = true) == true })
@@ -113,12 +126,13 @@ fun SearchResultScreen(viewModel: SearchResultViewModel, searchQuery: String? = 
                 })
             }
 
+            HorizontalDivider(modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp), color = Color.LightGray)
+
             AllProductList(boxWidth = boxWidth, modifier = Modifier.fillMaxWidth(), productList = allProducts, onClick = {
                 productDetailId.value = it.id
             }, onFavoriteClick = { selectedProduct, isFavorite ->
-                onFavoriteClick(selectedProduct, isFavorite, toasterState)
+                viewModel.sendEvent(SearchResultUiEvent.SetFavorite(selectedProduct, isFavorite))
             })
         }
     }
 }
-

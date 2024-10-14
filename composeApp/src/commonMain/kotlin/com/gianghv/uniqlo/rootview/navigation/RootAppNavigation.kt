@@ -19,7 +19,10 @@ interface RootAppDestination {
         @Composable
         override fun Content() {
             val mainViewModel: MainViewModel = getViewModel()
-            MainScreen(viewModel = mainViewModel)
+            val navigator = LocalNavigator.currentOrThrow
+            MainScreen(viewModel = mainViewModel, onLogout = {
+                navigator.replace(Login)
+            })
         }
     }
 

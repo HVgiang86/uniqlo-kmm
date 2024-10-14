@@ -1,6 +1,6 @@
 package com.gianghv.uniqlo.presentation.screen.searchresult
 
-import com.gianghv.uniqlo.presentation.screen.productdetail.VariationSize
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSize
 
 sealed class FilterType {
     class FilterSize(val size: VariationSize) : FilterType()

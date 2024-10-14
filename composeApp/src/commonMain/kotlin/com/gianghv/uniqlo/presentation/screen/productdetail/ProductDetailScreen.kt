@@ -51,20 +51,31 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composables.core.SheetDetent.Companion.FullyExpanded
+import com.composables.core.SheetDetent.Companion.Hidden
+import com.composables.core.rememberModalBottomSheetState
 import com.gianghv.uniqlo.domain.Image
 import com.gianghv.uniqlo.domain.Product
-import com.gianghv.uniqlo.domain.ProductVariation
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.BaseOutlinedButton
 import com.gianghv.uniqlo.presentation.component.ExpandableText
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
-import com.gianghv.uniqlo.presentation.component.MyBottomSheet
+import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
+import com.gianghv.uniqlo.presentation.screen.home.RecommendProductList
+import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.AddCartBottomSheet
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.BrandBar
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariantPickerBottomSheet
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationColorButton
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSizeButton
 import com.gianghv.uniqlo.util.ValidateHelper
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.round
@@ -81,12 +92,20 @@ import uniqlo.composeapp.generated.resources.ic_dark_uniqlo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onBack: () -> Unit) {
+fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onBack: () -> Unit, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
+    val scope = rememberCoroutineScope()
+
+    val addCartBottomSheetState = rememberModalBottomSheetState(
+        initialDetent = Hidden, detents = listOf(Hidden, FullyExpanded)
+    )
 
     LaunchedEffect(Unit) {
         if (productId == null) onBack()
-        else viewModel.sendEvent(ProductDetailUiEvent.LoadProduct(productId))
+        else {
+            viewModel.sendEvent(ProductDetailUiEvent.LoadProduct(productId))
+            viewModel.sendEvent(ProductDetailUiEvent.LoadRecommendedProduct(productId))
+        }
     }
 
     if (state.isLoading) {
@@ -94,6 +113,9 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
     }
 
     if (state.error != null) {
+        scope.launch {
+            addCartBottomSheetState.animateTo(Hidden)
+        }
         AppErrorDialog(state.error?.throwable, onDismissRequest = {})
     }
 
@@ -106,7 +128,7 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                     Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                 }
             }, actions = {
-                IconButton(onClick = onBack) {
+                IconButton(onClick = {}) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
                 }
             })
@@ -115,14 +137,65 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                 val screenHeight = getScreenHeightInDp().dp
 
                 val scrollState = rememberScrollState()
+                val productImages = product.images.let { it?.toMutableList() }.also { it?.add(0, Image(-1, product.defaultImage ?: "")) }?.distinctBy {
+                    it.imagePath
+                }
                 Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
                     ProductImagePanel(
-                        modifier = Modifier.fillMaxWidth().height(screenHeight * 0.6f), images = product.images
+                        modifier = Modifier.fillMaxWidth().height(screenHeight * 0.6f), images = productImages
                     )
-                    ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight(), product = product)
+                    ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                        product = product,
+                        state = state,
+                        viewModel = viewModel,
+                        onFavoriteClick = { product, isFavorite ->
+                            viewModel.sendEvent(ProductDetailUiEvent.SetFavorite(product, isFavorite))
+                        },
+                        onProductClick = {
+                            viewModel.sendEvent(ProductDetailUiEvent.LoadProduct(it.id))
+                            viewModel.sendEvent(ProductDetailUiEvent.LoadRecommendedProduct(it.id))
+                        })
                 }
 
-                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter))
+                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter),
+                    enableAddToCart = true,
+                    enableOrderNow = true,
+                    onAddToCart = {
+                        scope.launch {
+                            addCartBottomSheetState.animateTo(FullyExpanded)
+                        }
+                    },
+                    onOrderNow = {})
+
+                AddCartBottomSheet(variation = state.selectedVariation,
+                    size = state.selectedSize,
+                    state = addCartBottomSheetState,
+                    product = product,
+                    onSelectColor = {
+                        viewModel.sendEvent(ProductDetailUiEvent.SelectVariation(variation = it))
+                    },
+                    onSelectSize = {
+                        viewModel.sendEvent(ProductDetailUiEvent.SelectVariation(size = it))
+                    },
+                    addToCart = { variation, size, quantity ->
+                        viewModel.sendEvent(ProductDetailUiEvent.AddToCart(quantity, size, variation))
+                    })
+
+                if (state.addCartSuccess) {
+                    scope.launch {
+                        addCartBottomSheetState.animateTo(Hidden)
+                    }
+                    MyAlertDialog(title = "Thông báo",
+                        content = "Sản phẩm đã được thêm vào giỏ hàng",
+                        leftBtnTitle = "Tiếp tục mua hàng",
+                        rightBtnTitle = "Xem giỏ hàng",
+                        leftBtn = {
+                            onBack()
+                        },
+                        rightBtn = {
+                            navigateTo(MainScreenDestination.Cart)
+                        })
+                }
             }
         }
     }
@@ -206,18 +279,26 @@ fun ProductImagePagerIndicator(
 }
 
 @Composable
-fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
-    var variationSelectState by remember {
-        mutableStateOf<ProductVariation?>(null)
-    }
+fun ProductInfoPanel(
+    modifier: Modifier = Modifier,
+    product: Product,
+    state: ProductDetailUiState,
+    viewModel: ProductDetailViewModel,
+    onFavoriteClick: (Product, isFavorite: Boolean) -> Unit,
+    onProductClick: (Product) -> Unit,
+) {
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialDetent = Hidden, detents = listOf(Hidden, FullyExpanded)
+    )
 
-    var sizeSelectState by remember {
-        mutableStateOf<VariationSize?>(null)
-    }
+    val scope = rememberCoroutineScope()
+    var boxWidth by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
 
-    Column(
-        modifier = modifier.padding(16.dp).fillMaxWidth().wrapContentHeight()
-    ) {
+    Column(modifier = modifier.padding(16.dp).fillMaxWidth().wrapContentHeight().onGloballyPositioned { layoutCoordinates ->
+        val widthInPx = layoutCoordinates.size.width
+        boxWidth = with(density) { widthInPx.toDp() }
+    }) {
 
         Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             Text(
@@ -231,12 +312,12 @@ fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
                 textAlign = TextAlign.Justify
             )
 
-            IconButton(modifier = Modifier.size(24.dp).align(Alignment.TopEnd), onClick = {}) {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                )
+            val isFavorite = product.isFavorite
+            IconButton(onClick = {
+                onFavoriteClick(product, !isFavorite)
+            }, modifier = Modifier.size(24.dp).align(Alignment.TopEnd)) {
+                if (isFavorite) Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null, tint = Color.Red)
+                else Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = null, tint = Color.Gray)
             }
         }
 
@@ -263,26 +344,36 @@ fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Select size", style = MaterialTheme.typography.titleSmall, color = Color.Black)
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        ProductSizeSelectSection(selected = sizeSelectState, onSelect = {
-            sizeSelectState = it
-        })
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Select color", style = MaterialTheme.typography.titleSmall, color = Color.Black)
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        val variations = product.variations?.distinctBy { variation -> variation.color?.lowercase() }
-        variations?.let {
-            ProductColorSelectSection(variations = it, selected = variationSelectState, onSelect = { selectedVariation ->
-                variationSelectState = selectedVariation
-            })
+        Box(modifier = Modifier.wrapContentHeight().fillMaxWidth().clickable {
+            scope.launch {
+                bottomSheetState.animateTo(FullyExpanded)
+            }
+        }) {
+            Column {
+                Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                    Text("Variants", style = MaterialTheme.typography.titleSmall, color = Color.Black, modifier = Modifier.align(Alignment.CenterStart))
+                    Text(
+                        "Click to pick variants",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(modifier = Modifier.wrapContentHeight().fillMaxWidth()) {
+                    val variation = state.selectedVariation
+                    val size = state.selectedSize
+                    if (variation != null) VariationColorButton(variation, isSelected = false, onSelected = {})
+                    if (size != null) VariationSizeButton(size = size, isSelected = false, onSelected = {})
+                }
+            }
         }
+
+        VariantPickerBottomSheet(state = bottomSheetState, product = product, variation = state.selectedVariation, size = state.selectedSize, onSelectColor = {
+            viewModel.sendEvent(ProductDetailUiEvent.SelectVariation(variation = it))
+        }, onSelectSize = {
+            viewModel.sendEvent(ProductDetailUiEvent.SelectVariation(size = it))
+        })
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -309,16 +400,27 @@ fun ProductInfoPanel(modifier: Modifier = Modifier, product: Product) {
             )
         }
 
+        val recommendedProducts = state.recommendedProducts
+        if (recommendedProducts.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("May you like!", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+            RecommendProductList(boxWidth = boxWidth, modifier = Modifier.fillMaxWidth(), productList = recommendedProducts, onClick = {
+                onProductClick(it)
+            }, onFavoriteClick = { selectedProduct, isFavorite ->
+                onFavoriteClick(selectedProduct, isFavorite)
+            })
+        }
+
         Spacer(modifier = Modifier.height(120.dp))
     }
 }
 
 
 @Composable
-fun AddToCartPanel(modifier: Modifier) {
+fun AddToCartPanel(modifier: Modifier, enableAddToCart: Boolean = false, enableOrderNow: Boolean = false, onAddToCart: () -> Unit, onOrderNow: () -> Unit) {
     Row(modifier = modifier.background(color = Color.Transparent)) {
-        AddToCartButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = true, onClick = {})
-        OrderNowButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = true) { }
+        AddToCartButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = enableAddToCart, onClick = onAddToCart)
+        OrderNowButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = enableOrderNow, onClick = onOrderNow)
     }
 }
 
@@ -345,11 +447,6 @@ fun OrderNowButton(modifier: Modifier = Modifier, enable: Boolean = false, onCli
             Text(text = "Checkout", color = Color.White)
         }
     }
-}
-
-@Composable
-fun PickVariantBottomSheet() {
-    MyBottomSheet()
 }
 
 @Composable

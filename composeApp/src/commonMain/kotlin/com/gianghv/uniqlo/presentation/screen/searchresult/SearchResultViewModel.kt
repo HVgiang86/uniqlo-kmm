@@ -5,14 +5,18 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.ProductRepository
+import com.gianghv.uniqlo.data.UserRepository
+import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.Product
 import com.gianghv.uniqlo.util.logging.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class SearchResultViewModel(private val productRepository: ProductRepository) : BaseViewModel<SearchResultUiState, SearchResultUiEvent>() {
+class SearchResultViewModel(private val productRepository: ProductRepository, private val userRepository: UserRepository) :
+    BaseViewModel<SearchResultUiState, SearchResultUiEvent>() {
     override val state: StateFlow<SearchResultUiState>
         get() = reducer.state
     override val reducer: Reducer<SearchResultUiState, SearchResultUiEvent>
@@ -31,7 +35,11 @@ class SearchResultViewModel(private val productRepository: ProductRepository) : 
 
     fun searchWithFilter(query: String, filterState: FilterState) {
         uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
-            productRepository.getAllProduct().collect {
+            productRepository.getAllProduct().combine(userRepository.getWishlist(WholeApp.USER_ID)) { products, wishlist ->
+                products.map { product ->
+                    product.copy(isFavorite = wishlist.contains(product.id))
+                }
+            }.collect {
                 val allProducts = it
                 val searchResult = it.filter { product ->
                     product.name?.contains(query, ignoreCase = true) == true
@@ -39,6 +47,38 @@ class SearchResultViewModel(private val productRepository: ProductRepository) : 
                 val filteredList = applyFilterForProductList(searchResult, filterState)
                 setAllColorList(allProducts)
                 reducer.sendEvent(SearchResultUiEvent.SearchForProductSuccess(searchResult, filteredList, allProducts))
+            }
+        }
+    }
+
+    fun getRecommendProduct(filterState: FilterState) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            productRepository.getAllProduct().combine(productRepository.getUserRecommendProduct(WholeApp.USER_ID)) { products, recommendList ->
+                products.filter { product ->
+                    recommendList.contains(product.id)
+                }.take(10)
+            }.combine(userRepository.getWishlist(WholeApp.USER_ID)) { recommendedProducts, wishlist ->
+                recommendedProducts.map { product ->
+                    product.copy(isFavorite = wishlist.contains(product.id))
+                }
+            }.collect {
+                val allProducts = it
+                val searchResult = it
+                val filteredList = applyFilterForProductList(searchResult, filterState)
+                setAllColorList(allProducts)
+                reducer.sendEvent(SearchResultUiEvent.SearchForProductSuccess(searchResult, filteredList, allProducts))
+            }
+        }
+    }
+
+    fun setFavorite(product: Product, isFavorite: Boolean) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            userRepository.changeWishlist(WholeApp.USER_ID, product.id, isFavorite).collect {
+                if (it) {
+                    reducer.sendEvent(SearchResultUiEvent.SetFavoriteSuccess(product, isFavorite))
+                } else {
+                    reducer.sendEvent(SearchResultUiEvent.SetFavoriteSuccess(product, !isFavorite))
+                }
             }
         }
     }
@@ -114,11 +154,7 @@ class SearchResultReducer(initialVal: SearchResultUiState, private val viewModel
             is SearchResultUiEvent.SearchForProductSuccess -> {
                 setState(
                     oldState.copy(
-                        isLoading = false,
-                        error = null,
-                        productList = event.productList,
-                        searchResult = event.searchResult,
-                        allProducts = event.allProducts
+                        isLoading = false, error = null, productList = event.productList, searchResult = event.searchResult, allProducts = event.allProducts
                     )
                 )
             }
@@ -131,11 +167,36 @@ class SearchResultReducer(initialVal: SearchResultUiState, private val viewModel
             is SearchResultUiEvent.ApplyFilterSuccess -> {
                 setState(oldState.copy(productList = event.productList))
             }
+
+            is SearchResultUiEvent.SetFavorite -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.setFavorite(event.product, event.isFavorite)
+            }
+
+            is SearchResultUiEvent.SetFavoriteSuccess -> {
+                val product = event.product
+                val isFavorite = event.isFavorite
+
+                val products = oldState.productList.map {
+                    if (it.id == product.id) {
+                        it.copy(isFavorite = isFavorite)
+                    } else {
+                        it
+                    }
+                }
+
+                setState(oldState.copy(isLoading = false, error = null, productList = products))
+            }
+
+            is SearchResultUiEvent.GetRecommendProduct -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.getRecommendProduct(event.filterState)
+            }
         }
     }
 
     companion object {
-        var INSTANCE: SearchResultReducer? = null
+        private var INSTANCE: SearchResultReducer? = null
         fun getInstance(initialVal: SearchResultUiState, viewModel: SearchResultViewModel): SearchResultReducer {
             if (INSTANCE == null) {
                 INSTANCE = SearchResultReducer(initialVal, viewModel)

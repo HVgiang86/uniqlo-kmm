@@ -29,10 +29,9 @@ fun App() = AppTheme {
         } else {
             val isLoggedIn = appRepository.isLoggedIn()
             if (isLoggedIn) {
-//                val userId = appRepository.getUserId()
-                val userId = 3L
+                val userId = appRepository.getUserId()
                 AppLogger.d("User id: $userId")
-                if (userId != null) {
+                if (userId != null && userId != -1L) {
                     state.value = state.value.copy(isLoading = false, error = null, isFirstRun = false, isLoggedIn = true)
                     WholeApp.USER_ID = userId
                 }
