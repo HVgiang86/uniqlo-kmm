@@ -1,12 +1,15 @@
 package com.gianghv.uniqlo.presentation.screen.cart
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,13 +36,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gianghv.uniqlo.domain.CartItem
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.component.MyAlertDialog
+import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.cart.components.CartItemWidget
+import com.gianghv.uniqlo.theme.Black
 import com.gianghv.uniqlo.util.asState
+import com.gianghv.uniqlo.util.ext.toCurrencyText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,9 +94,12 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding()),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             if (state.selectedItems.isNotEmpty()) {
-                Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.Start)) {
                     Checkbox(checked = state.selectedItems.size == cartItems.size, onCheckedChange = {
                         if (it) viewModel.sendEvent(CartUiEvent.SelectAll) else viewModel.sendEvent(CartUiEvent.UnSelectAll)
                     }, modifier = Modifier.align(Alignment.CenterVertically))
@@ -100,7 +110,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                 HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
             }
 
-            LazyColumn(modifier = Modifier.fillMaxWidth().wrapContentHeight().onGloballyPositioned { layoutCoordinates ->
+            LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f).onGloballyPositioned { layoutCoordinates ->
                 val widthInPx = layoutCoordinates.size.width
                 boxWidth = with(density) { widthInPx.toDp() }
             }) {
@@ -123,6 +133,39 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                     }
                 }
             }
+
+            Box(modifier = Modifier.wrapContentWidth().wrapContentHeight().align(Alignment.End)) {
+                Row(modifier = Modifier.padding(vertical = 16.dp, horizontal = 32.dp)) {
+                    Column(modifier = Modifier.weight(1.5f)) {
+
+                        Text("Price", style = MaterialTheme.typography.bodySmall, color = Black)
+
+                        val totalPrice = state.selectedItems.fold(0.0) { acc, cartItem ->
+                            val discountPercentage = (cartItem.variation?.product?.discountPercentage ?: 0) % 101
+                            val originalPrice = cartItem.variation?.price ?: 0.0
+                            val finalPrice = originalPrice - originalPrice * discountPercentage * 1.0 / 100
+
+                            acc + finalPrice
+                        }
+                        val priceText = (totalPrice*1000.0).toCurrencyText()
+                        Text(
+                            priceText,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = Color.Red,
+                            minLines = 1,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    RedFilledTextButton(onClick = {
+
+                    }, modifier = Modifier.weight(1f), text = {
+                        Text("Checkout", style = MaterialTheme.typography.titleSmall, color = Color.White)
+                    })
+                }
+            }
+
         }
 
         val itemToDelete = confirmDeleteDialog.value

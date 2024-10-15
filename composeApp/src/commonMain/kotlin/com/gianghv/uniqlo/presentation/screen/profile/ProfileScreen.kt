@@ -20,11 +20,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
-import com.dokar.sonner.rememberToasterState
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
@@ -36,9 +34,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestination) -> Unit, onLogout: () -> Unit) {
     val state by viewModel.state.asState()
-
-    val uriHandler = LocalUriHandler.current
-    val toasterState = rememberToasterState()
 
     val scope = rememberCoroutineScope()
 
@@ -71,9 +66,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestinatio
                 }
             }) {
                 com.composables.core.Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    tint = Color.Black
+                    imageVector = Icons.Default.Settings, contentDescription = null, tint = Color.Black
                 )
             }
 

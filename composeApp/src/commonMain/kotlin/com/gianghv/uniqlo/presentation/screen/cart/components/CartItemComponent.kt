@@ -75,12 +75,16 @@ fun CartItemWidget(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val priceText = ((cartItem.variation?.price ?: 0.0) * 1000.0).toCurrencyText()
+                val discountPercentage = (cartItem.variation?.product?.discountPercentage ?: 0) % 101
+                val originalPrice = cartItem.variation?.price ?: 0.0
+                val finalPrice = originalPrice - originalPrice * discountPercentage * 1.0 / 100
+
+                val priceText = (finalPrice * 1000.0).toCurrencyText()
                 Text(
                     priceText, style = MaterialTheme.typography.titleSmall, color = Color.Red, minLines = 1, maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    cartItem.size ?: "",
+                    "${cartItem.size ?: ""}, ${cartItem.variation?.color?.uppercase() ?: ""}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray,
                     minLines = 1,
@@ -89,7 +93,8 @@ fun CartItemWidget(
                 )
             }
 
-            QuantityComponent(quantity = cartItem.quantity ?: 1,
+            QuantityComponent(
+                quantity = cartItem.quantity ?: 1,
                 modifier = Modifier.align(Alignment.BottomEnd),
                 onQuantityChange = onUpdateQuantity,
                 onRequestDelete = {

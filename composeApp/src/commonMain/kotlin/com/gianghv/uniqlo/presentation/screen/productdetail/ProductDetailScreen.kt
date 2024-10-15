@@ -187,7 +187,7 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                     }
                     MyAlertDialog(title = "Thông báo",
                         content = "Sản phẩm đã được thêm vào giỏ hàng",
-                        leftBtnTitle = "Tiếp tục mua hàng",
+                        leftBtnTitle = "Tiếp tục",
                         rightBtnTitle = "Xem giỏ hàng",
                         leftBtn = {
                             onBack()
