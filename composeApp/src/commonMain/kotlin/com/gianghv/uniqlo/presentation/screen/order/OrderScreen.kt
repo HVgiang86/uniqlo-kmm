@@ -37,7 +37,7 @@ fun OrderScreen(onBack: () -> Unit) {
             }
         })
     }) {
-        LazyColumn  (modifier = Modifier.) {
+        LazyColumn  () {
 
         }
 

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import coil3.annotation.ExperimentalCoilApi
 import com.gianghv.uniqlo.data.AppRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
@@ -23,6 +22,20 @@ fun App() = AppTheme {
     val coroutineScope = rememberCoroutineScope()
 
     coroutineScope.launch {
+        val recommendationUrl = appRepository.getRecommendationUrl()
+        if (recommendationUrl != null) {
+            WholeApp.RECOMMEND_BASE_URL = recommendationUrl
+        } else {
+            appRepository.setRecommendationUrl(WholeApp.RECOMMEND_BASE_URL)
+        }
+
+        val chatUrl = appRepository.getChatUrl()
+        if (chatUrl != null) {
+            WholeApp.CHAT_BASE_URL = chatUrl
+        } else {
+            appRepository.setChatUrl(WholeApp.CHAT_BASE_URL)
+        }
+
         val isFirstRun = appRepository.isFirstRun()
         if (isFirstRun) {
             state.value = state.value.copy(isLoading = false, error = null, isFirstRun = true, isLoggedIn = false)

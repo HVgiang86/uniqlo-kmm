@@ -46,6 +46,18 @@ class ProfileViewModel(private val userRepository: UserRepository, private val a
             reducer.sendEvent(ProfileUiEvent.LogoutSuccess)
         }
     }
+
+    fun changeRecommendationServer(url: String) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            appRepository.setRecommendationUrl(url)
+        }
+    }
+
+    fun changeChatServer(url: String) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            appRepository.setChatUrl(url)
+        }
+    }
 }
 
 
@@ -72,6 +84,14 @@ class ProfileReducer(initialUiState: ProfileUiState, private val viewModel: Prof
 
             ProfileUiEvent.LogoutSuccess -> {
                 setState(oldState.copy(isLoading = false, error = null, isLogout = true))
+            }
+
+            is ProfileUiEvent.ChangeChatServer -> {
+                viewModel.changeChatServer(event.url)
+            }
+
+            is ProfileUiEvent.ChangeRecommendationServer -> {
+                viewModel.changeRecommendationServer(event.url)
             }
         }
     }

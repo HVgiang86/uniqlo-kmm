@@ -81,9 +81,11 @@ fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestinatio
             Text(text = "Profile id = ${state.user?.id}", modifier = Modifier.align(Alignment.Center))
         }
 
-        SettingBottomSheet(
-            state = bottomSheetState,
-        )
+        SettingBottomSheet(state = bottomSheetState, onChangeRecommendationServer = {
+            viewModel.sendEvent(ProfileUiEvent.ChangeRecommendationServer(it))
+        }, onChangeChatServer = {
+            viewModel.sendEvent(ProfileUiEvent.ChangeChatServer(it))
+        })
     }
 
 }

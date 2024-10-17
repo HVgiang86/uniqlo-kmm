@@ -41,68 +41,7 @@ fun AIChatScreen() {
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
 
-    val pagerState = rememberPagerState(0) { 5 }
-    val tabItems = listOf(
-        TabItem("Actions", Icons.Filled.Menu, Icons.Outlined.Menu),
-        TabItem("Input", Icons.Filled.Search, Icons.Outlined.Search),
-        TabItem("Navigation", Icons.Filled.AddCircle, Icons.Outlined.AddCircle),
-        TabItem("Color", Icons.Filled.AddCircle, Icons.Outlined.AddCircle),
-        TabItem("Typo", Icons.Filled.AddCircle, Icons.Outlined.AddCircle)
-    )
 
-    val scrollState = rememberScrollState()
-    Column {
-        TabRow(selectedTabIndex = pagerState.currentPage, divider = {
-            HorizontalDivider(thickness = 3.dp)
-        }, indicator = { position ->
-            SecondaryIndicator(
-                Modifier.tabIndicatorOffset(position[pagerState.currentPage]), color = MaterialTheme.colorScheme.primary
-            )
-        }, tabs = {
-            tabItems.forEachIndexed { index, tabItem ->
-                LeadingIconTab(selected = pagerState.currentPage == index, onClick = {
-                    scope.launch {
-                        pagerState.requestScrollToPage(index)
-                    }
-                }, icon = {
-                    val vector = if (pagerState.currentPage == index) tabItem.selectedIcon else tabItem.unselectedIcon
-                    Icon(imageVector = vector, contentDescription = null)
-                }, text = {
-                    Text(text = tabItem.title)
-                })
-            }
-        }, modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 60.dp))
-
-        when (pagerState.currentPage) {
-            0 -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Actions()
-                }
-            }
-
-            1 -> {
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                    TextInputs()
-                }
-            }
-
-            2 -> {
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                    Navigation()
-                }
-            }
-
-            3 -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ColorScreen()
-                }
-            }
-
-            4 -> {
-                TypographyScreen()
-            }
-        }
-    }
 }
 
 

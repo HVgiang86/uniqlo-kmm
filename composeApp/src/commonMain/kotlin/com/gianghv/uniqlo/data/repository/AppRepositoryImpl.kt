@@ -19,4 +19,12 @@ class AppRepositoryImpl(private val userPreferences: UserPreferences) : AppRepos
         return string.toLong()
     }
     override suspend fun setUserId(userId: Long) = userPreferences.putString(UserPreferences.KEY_USER_ID, userId.toString())
+    override suspend fun getRecommendationUrl(): String? = userPreferences.getString(UserPreferences.KEY_RECOMMENDATION_URL)
+
+    override suspend fun setRecommendationUrl(url: String) = userPreferences.putString(UserPreferences.KEY_RECOMMENDATION_URL, url)
+
+    override suspend fun getChatUrl(): String? = userPreferences.getString(UserPreferences.KEY_CHAT_URL)
+
+    override suspend fun setChatUrl(url: String) = userPreferences.putString(UserPreferences.KEY_CHAT_URL, url)
+
 }

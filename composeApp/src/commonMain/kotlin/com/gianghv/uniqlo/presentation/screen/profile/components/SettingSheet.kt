@@ -33,6 +33,8 @@ import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
 @Composable
 fun SettingBottomSheet(
     state: ModalBottomSheetState? = null,
+    onChangeRecommendationServer: (String) -> Unit,
+    onChangeChatServer: (String) -> Unit
 ) {
     val show = state ?: rememberModalBottomSheetState(
         initialDetent = FullyExpanded, detents = listOf(Hidden, FullyExpanded)
@@ -63,9 +65,30 @@ fun SettingBottomSheet(
                     initialValue = WholeApp.RECOMMEND_BASE_URL,
                     onValueChange = {
                         WholeApp.RECOMMEND_BASE_URL = it
+                        onChangeRecommendationServer(it)
                     },
                     onMessageSent = {
                         WholeApp.RECOMMEND_BASE_URL = it
+                        onChangeRecommendationServer(it)
+                    },
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("AI Chat Server URL", style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+
+                AppOutlinedTextField(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(70.dp),
+                    placeholder = "AI Chat Server URL",
+                    initialValue = WholeApp.CHAT_BASE_URL,
+                    onValueChange = {
+                        WholeApp.CHAT_BASE_URL = it
+                        onChangeChatServer(it)
+                    },
+                    onMessageSent = {
+                        WholeApp.CHAT_BASE_URL = it
+                        onChangeChatServer(it)
                     },
                     textStyle = MaterialTheme.typography.bodySmall
                 )

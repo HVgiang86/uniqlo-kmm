@@ -9,4 +9,6 @@ sealed class ProfileUiEvent : Reducer.UiEvent {
     data class LoadUserSuccess(val user: User) : ProfileUiEvent()
     data object Logout : ProfileUiEvent()
     data object LogoutSuccess : ProfileUiEvent()
+    data class ChangeRecommendationServer(val url: String) : ProfileUiEvent()
+    data class ChangeChatServer(val url: String) : ProfileUiEvent()
 }

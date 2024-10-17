@@ -7,4 +7,8 @@ interface AppRepository {
     suspend fun setLoggedIn(isLoggedIn: Boolean)
     suspend fun getUserId(): Long?
     suspend fun setUserId(userId: Long)
+    suspend fun getRecommendationUrl(): String?
+    suspend fun setRecommendationUrl(url: String)
+    suspend fun getChatUrl(): String?
+    suspend fun setChatUrl(url: String)
 }

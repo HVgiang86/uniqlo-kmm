@@ -5,6 +5,7 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.CartRepository
+import com.gianghv.uniqlo.data.ChatRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.CartItem
@@ -13,8 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-class CartViewModel(private val cartRepository: CartRepository, private val userRepository: UserRepository) : BaseViewModel<CartUiState, CartUiEvent>() {
+class CartViewModel(private val cartRepository: CartRepository, private val userRepository: UserRepository, private val chatRepository: ChatRepository) : BaseViewModel<CartUiState, CartUiEvent>() {
     override val state: StateFlow<CartUiState>
         get() = reducer.state
     override val reducer: Reducer<CartUiState, CartUiEvent>
@@ -32,10 +34,21 @@ class CartViewModel(private val cartRepository: CartRepository, private val user
         }
 
     fun loadOrder() {
+
         uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            runBlocking {
+                chatRepository.login()
+            }
+
             cartRepository.getCartItems(WholeApp.USER_ID).collect {
                 reducer.sendEvent(CartUiEvent.LoadOrderSuccess(it))
             }
+
+            chatRepository.receiveMessage().collect{
+                AppLogger.d("Message from Socket: $it")
+            }
+
+            chatRepository.sendMessage("I'am 5'2 and 130 lbs.What size should I get?")
         }
     }
 

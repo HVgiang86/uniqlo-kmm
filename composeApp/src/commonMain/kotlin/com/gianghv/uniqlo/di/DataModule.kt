@@ -2,10 +2,12 @@ package com.gianghv.uniqlo.di
 
 import com.gianghv.uniqlo.data.AppRepository
 import com.gianghv.uniqlo.data.CartRepository
+import com.gianghv.uniqlo.data.ChatRepository
 import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.repository.AppRepositoryImpl
 import com.gianghv.uniqlo.data.repository.CartRepositoryImpl
+import com.gianghv.uniqlo.data.repository.ChatRepositoryImpl
 import com.gianghv.uniqlo.data.repository.ProductRepositoryImpl
 import com.gianghv.uniqlo.data.repository.UserRepositoryImpl
 import com.gianghv.uniqlo.data.source.preferences.UserPreferences
@@ -36,6 +38,7 @@ private val repositoryModule = module {
     single<CartRepository>{
         CartRepositoryImpl(get())
     }
+    single<ChatRepository> { ChatRepositoryImpl() }
 }
 
 private val preferencesSourceModule = module {

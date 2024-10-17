@@ -18,5 +18,5 @@ val presentationModule = module {
     single { SearchResultViewModel(get(), get()) }
     single { WishListViewModel(get(), get(), get()) }
     single { ProfileViewModel(get(), get()) }
-    single { CartViewModel(get(), get()) }
+    single { CartViewModel(get(), get(), get()) }
 }

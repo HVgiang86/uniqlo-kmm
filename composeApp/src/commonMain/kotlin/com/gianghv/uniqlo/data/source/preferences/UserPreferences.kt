@@ -8,6 +8,8 @@ interface UserPreferences {
         const val KEY_USER_ID = "KEY_USER_ID"
         const val TOKEN = "TOKEN"
         const val REFRESH_TOKEN = "REFRESH_TOKEN"
+        const val KEY_RECOMMENDATION_URL = "RECOMMENDATION_URL"
+        const val KEY_CHAT_URL = "CHAT_URL"
     }
 
     suspend fun getString(key: String, defaultValue: String? = null): String?
