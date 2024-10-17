@@ -41,7 +41,7 @@ class HomeViewModel(private val productRepository: ProductRepository, private va
             productRepository.getAllProduct().combine(userRepository.getWishlist(WholeApp.USER_ID)) { products, wishlist ->
                 products.map { product ->
                     product.copy(isFavorite = wishlist.contains(product.id))
-                }
+                }.sortedWith(compareByDescending { WholeApp.priorityProducts.contains(it.id) })
             }.collect {
                 reducer.sendEvent(HomeUiEvent.LoadAllProductSuccess(it))
             }
@@ -57,7 +57,7 @@ class HomeViewModel(private val productRepository: ProductRepository, private va
             }.combine(userRepository.getWishlist(WholeApp.USER_ID)) { recommendedProducts, wishlist ->
                 recommendedProducts.map { product ->
                     product.copy(isFavorite = wishlist.contains(product.id))
-                }
+                }.sortedWith(compareByDescending { WholeApp.priorityProducts.contains(it.id) })
             }.collect {
                 reducer.sendEvent(HomeUiEvent.LoadRecommendProductSuccess(it))
             }

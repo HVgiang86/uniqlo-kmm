@@ -19,6 +19,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.gianghv.uniqlo.base.getViewModel
 import com.gianghv.uniqlo.presentation.screen.aichat.AIChatScreen
+import com.gianghv.uniqlo.presentation.screen.aichat.AiChatViewModel
 import com.gianghv.uniqlo.presentation.screen.cart.CartScreen
 import com.gianghv.uniqlo.presentation.screen.cart.CartViewModel
 import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
@@ -141,7 +142,10 @@ interface MainScreenDestination {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            AIChatScreen()
+            val viewModel: AiChatViewModel = getViewModel()
+            AIChatScreen(viewModel, navigateTo = {
+                navigator.navigate(it)
+            })
         }
 
         override fun getTitle() = Res.string.ai_chat.toString()

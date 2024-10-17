@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-fun App() = AppTheme {
+fun App(productId: Long? = null) = AppTheme {
     val state = remember { mutableStateOf(RootAppUiState.initial()) }
     val appRepository: AppRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
@@ -70,6 +70,7 @@ fun App() = AppTheme {
     }
 
     if (state.value.isLoggedIn) {
+        AppLogger.d("Logged in. Process to product detail screen: $productId")
         RootAppNavigation(startDestination = RootAppDestination.Home)
     }
 

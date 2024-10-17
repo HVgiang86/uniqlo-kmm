@@ -17,3 +17,4 @@ interface AppVersion {
 expect fun isAndroid(): Boolean
 
 expect fun createSettings(): Settings
+

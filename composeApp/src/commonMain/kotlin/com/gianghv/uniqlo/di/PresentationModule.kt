@@ -1,5 +1,6 @@
 package com.gianghv.uniqlo.di
 
+import com.gianghv.uniqlo.presentation.screen.aichat.AiChatViewModel
 import com.gianghv.uniqlo.presentation.screen.auth.AuthViewModel
 import com.gianghv.uniqlo.presentation.screen.cart.CartViewModel
 import com.gianghv.uniqlo.presentation.screen.home.HomeViewModel
@@ -19,4 +20,5 @@ val presentationModule = module {
     single { WishListViewModel(get(), get(), get()) }
     single { ProfileViewModel(get(), get()) }
     single { CartViewModel(get(), get(), get()) }
+    single { AiChatViewModel(get()) }
 }

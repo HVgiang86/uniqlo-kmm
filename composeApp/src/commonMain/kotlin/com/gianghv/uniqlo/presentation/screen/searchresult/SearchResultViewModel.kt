@@ -43,7 +43,7 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
                 val allProducts = it
                 val searchResult = it.filter { product ->
                     product.name?.contains(query, ignoreCase = true) == true
-                }
+                }.sortedWith(compareByDescending { WholeApp.priorityProducts.contains(it.id) })
                 val filteredList = applyFilterForProductList(searchResult, filterState)
                 setAllColorList(allProducts)
                 reducer.sendEvent(SearchResultUiEvent.SearchForProductSuccess(searchResult, filteredList, allProducts))
@@ -56,11 +56,11 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
             productRepository.getAllProduct().combine(productRepository.getUserRecommendProduct(WholeApp.USER_ID)) { products, recommendList ->
                 products.filter { product ->
                     recommendList.contains(product.id)
-                }.take(10)
+                }
             }.combine(userRepository.getWishlist(WholeApp.USER_ID)) { recommendedProducts, wishlist ->
                 recommendedProducts.map { product ->
                     product.copy(isFavorite = wishlist.contains(product.id))
-                }
+                }.sortedWith(compareByDescending { WholeApp.priorityProducts.contains(it.id) })
             }.collect {
                 val allProducts = it
                 val searchResult = it

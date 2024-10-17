@@ -14,6 +14,8 @@ import com.gianghv.uniqlo.data.source.preferences.UserPreferences
 import com.gianghv.uniqlo.data.source.preferences.UserPreferencesImpl
 import com.gianghv.uniqlo.data.source.remote.CartRemote
 import com.gianghv.uniqlo.data.source.remote.CartRemoteImpl
+import com.gianghv.uniqlo.data.source.remote.ChatRemote
+import com.gianghv.uniqlo.data.source.remote.ChatRemoteImpl
 import com.gianghv.uniqlo.data.source.remote.ProductDataSource
 import com.gianghv.uniqlo.data.source.remote.ProductDataSourceImpl
 import com.gianghv.uniqlo.data.source.remote.UserRemoteSource
@@ -38,7 +40,7 @@ private val repositoryModule = module {
     single<CartRepository>{
         CartRepositoryImpl(get())
     }
-    single<ChatRepository> { ChatRepositoryImpl() }
+    single<ChatRepository> { ChatRepositoryImpl(get()) }
 }
 
 private val preferencesSourceModule = module {
@@ -65,6 +67,10 @@ private val dataSourceModule = module {
 
     single<CartRemote> {
         CartRemoteImpl(get())
+    }
+
+    single<ChatRemote> {
+        ChatRemoteImpl(get())
     }
 }
 

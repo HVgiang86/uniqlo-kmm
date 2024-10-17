@@ -11,7 +11,7 @@ import androidx.core.view.WindowCompat
 import com.gianghv.uniqlo.rootview.App
 
 @Composable
-fun MainView() {
+fun MainView(productId: Long? = null) {
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -23,7 +23,7 @@ fun MainView() {
         }
     }
 
-    App()
+    App(productId)
 }
 
 @Preview

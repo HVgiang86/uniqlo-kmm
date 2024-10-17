@@ -36,19 +36,9 @@ class CartViewModel(private val cartRepository: CartRepository, private val user
     fun loadOrder() {
 
         uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
-            runBlocking {
-                chatRepository.login()
-            }
-
             cartRepository.getCartItems(WholeApp.USER_ID).collect {
                 reducer.sendEvent(CartUiEvent.LoadOrderSuccess(it))
             }
-
-            chatRepository.receiveMessage().collect{
-                AppLogger.d("Message from Socket: $it")
-            }
-
-            chatRepository.sendMessage("I'am 5'2 and 130 lbs.What size should I get?")
         }
     }
 
