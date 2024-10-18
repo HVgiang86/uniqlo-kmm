@@ -12,5 +12,6 @@ data class ChatMessage(
     @SerialName("is_user")
     val isUser: Boolean,
     @SerialName("session_number")
-    val sessionNumber: Int
+    val sessionNumber: Int,
+    val products: List<Product>? = null
 )

@@ -80,6 +80,15 @@ interface MainScreenDestination {
         }
     }
 
+    object OrderHistory : Screen, TopLevelScreenDestination {
+        @Composable
+        override fun Content() {
+
+        }
+
+        override fun getTitle() = "Order History"
+    }
+
     class SearchResult(params: Map<String, Any>) : Screen, WithParam(params) {
         @Composable
         override fun Content() {

@@ -1,5 +1,6 @@
 package com.gianghv.uniqlo.presentation.screen.order
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -18,13 +20,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.gianghv.uniqlo.domain.CartItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderScreen(onBack: () -> Unit) {
+fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), title = {
-            Text(text = "Order", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(text = "Create Order", style = MaterialTheme.typography.titleMedium, color = Color.Black)
         }, actions = {
             IconButton(onClick = {
 
@@ -37,6 +40,9 @@ fun OrderScreen(onBack: () -> Unit) {
             }
         })
     }) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            HorizontalDivider()
+        }
         LazyColumn  () {
 
         }

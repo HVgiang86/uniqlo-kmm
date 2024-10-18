@@ -7,4 +7,5 @@ object ApiEndPoint {
     const val PRODUCT_END_POINT = "products"
     const val USER_API_END_POINT = "accounts"
     const val CART_API_END_POINT = "carts"
+    const val ORDER_API_END_POINT = "orders"
 }

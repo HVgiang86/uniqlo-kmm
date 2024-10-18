@@ -5,13 +5,17 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.ChatRepository
+import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.WholeApp
+import com.gianghv.uniqlo.domain.ChatMessage
+import com.gianghv.uniqlo.util.logging.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AiChatViewModel(private val chatRepository: ChatRepository) : BaseViewModel<AiChatUiState, AiChatUiEvent>() {
+class AiChatViewModel(private val chatRepository: ChatRepository, private val productRepository: ProductRepository) :
+    BaseViewModel<AiChatUiState, AiChatUiEvent>() {
     override val state: StateFlow<AiChatUiState>
         get() = reducer.state
     override val reducer: Reducer<AiChatUiState, AiChatUiEvent>
@@ -35,33 +39,79 @@ class AiChatViewModel(private val chatRepository: ChatRepository) : BaseViewMode
             }
         }
     }
+
+    fun loadEmbeddedProduct(id: Long, messageId: Long) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            productRepository.getProductDetail(id).collect {
+                reducer.sendEvent(AiChatUiEvent.LoadEmbeddedProductSuccess(messageId, id, it))
+            }
+        }
+    }
+
+    fun sendMessage(message: String) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            reducer.sendEvent(AiChatUiEvent.MessageSent(ChatMessage(-1, message, "", true, sessionNumber = -1, null)))
+            chatRepository.sendMessage(WholeApp.USER_ID, message).collect{
+                reducer.sendEvent(AiChatUiEvent.MessageReceived(it))
+            }
+        }
+    }
 }
 
 class ChatReducer(initialVal: AiChatUiState, private val viewModel: AiChatViewModel) : Reducer<AiChatUiState, AiChatUiEvent>(initialVal) {
     override fun reduce(oldState: AiChatUiState, event: AiChatUiEvent) {
         when (event) {
             is AiChatUiEvent.Error -> {
-                setState(oldState.copy(isLoading = false, error = ErrorState(event.error, true)))
+                setState(oldState.copy(isLoading = false, isServerTyping = false, error = ErrorState(event.error, true)))
             }
 
             AiChatUiEvent.HideChatSuggestions -> {}
             AiChatUiEvent.LoadChatMessages -> {
-                setState(oldState.copy(isLoading = true, error = null))
+                setState(oldState.copy(isLoading = true, error = null, isServerTyping = false))
                 viewModel.loadChatMessages()
             }
 
             is AiChatUiEvent.LoadChatMessagesSuccess -> {
-                setState(oldState.copy(isLoading = false, chatMessages = event.chatMessages))
+                setState(oldState.copy(isLoading = false, isServerTyping = false, chatMessages = event.chatMessages))
             }
 
-            is AiChatUiEvent.MessageReceived -> {}
-            is AiChatUiEvent.MessageSent -> {}
+            is AiChatUiEvent.MessageReceived -> {
+                val newMessages = oldState.chatMessages.toMutableList()
+                newMessages.add(event.chatMessage)
+                setState(oldState.copy(chatMessages = newMessages, isServerTyping = false))
+            }
+            is AiChatUiEvent.MessageSent -> {
+                val newMessages = oldState.chatMessages.toMutableList()
+                newMessages.add(event.chatMessage)
+                setState(oldState.copy(chatMessages = newMessages, isServerTyping = true))
+            }
             AiChatUiEvent.RandomChatSuggestions -> {}
             is AiChatUiEvent.SendMessage -> {
-
+                viewModel.sendMessage(event.message)
             }
 
             is AiChatUiEvent.ShowChatSuggestions -> {}
+            is AiChatUiEvent.LoadEmbeddedProduct -> {
+                viewModel.loadEmbeddedProduct(id = event.id, messageId = event.messageId)
+            }
+
+            is AiChatUiEvent.LoadEmbeddedProductSuccess -> {
+                val updatedMessages = oldState.chatMessages.map { message ->
+                    if (message.id == event.messageId) {
+                        val tempList = message.products?.toMutableList() ?: mutableListOf()
+                        val updatedProducts = tempList.apply {
+                            if (none { it.id == event.id }) {
+                                add(event.product)
+                            }
+                        }
+                        message.copy(products = updatedProducts)
+                    } else {
+                        message
+                    }
+                }
+                val newState = oldState.copy(chatMessages = updatedMessages)
+                setState(newState)
+            }
         }
     }
 

@@ -11,4 +11,8 @@ interface AppRepository {
     suspend fun setRecommendationUrl(url: String)
     suspend fun getChatUrl(): String?
     suspend fun setChatUrl(url: String)
+    suspend fun getUserAddress(): String?
+    suspend fun setUserAddress(address: String)
+    suspend fun getUserPhone(): String?
+    suspend fun setUserPhone(phone: String)
 }

@@ -7,12 +7,14 @@ import uniqlo.composeapp.generated.resources.ic_bottom_nav_ai_chat
 import uniqlo.composeapp.generated.resources.ic_bottom_nav_home
 import uniqlo.composeapp.generated.resources.ic_bottom_nav_profile
 import uniqlo.composeapp.generated.resources.ic_bottom_nav_wishlist
+import uniqlo.composeapp.generated.resources.ic_order_history
 
 
 enum class BottomNavItem(val iconRes: DrawableResource) {
     HOME(iconRes = Res.drawable.ic_bottom_nav_home),
     WISH_LIST(iconRes = Res.drawable.ic_bottom_nav_wishlist),
     AI_CHAT(iconRes = Res.drawable.ic_bottom_nav_ai_chat),
+    ORDER_HISTORY(iconRes = Res.drawable.ic_order_history),
     PROFILE(iconRes = Res.drawable.ic_bottom_nav_profile);
 
     fun asTopLevelDestination(): MainScreenDestination {
@@ -21,6 +23,7 @@ enum class BottomNavItem(val iconRes: DrawableResource) {
             WISH_LIST -> MainScreenDestination.WishList
             AI_CHAT -> MainScreenDestination.AiChat
             PROFILE -> MainScreenDestination.Profile()
+            ORDER_HISTORY -> MainScreenDestination.OrderHistory
         }
     }
 }

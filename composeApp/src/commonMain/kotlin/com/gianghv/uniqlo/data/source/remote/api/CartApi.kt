@@ -3,10 +3,13 @@ package com.gianghv.uniqlo.data.source.remote.api
 import com.gianghv.uniqlo.constant.BASE_URL
 import com.gianghv.uniqlo.coredata.BaseResponse
 import com.gianghv.uniqlo.data.source.remote.api.ApiEndPoint.CART_API_END_POINT
+import com.gianghv.uniqlo.data.source.remote.api.ApiEndPoint.ORDER_API_END_POINT
 import com.gianghv.uniqlo.data.source.remote.request.CreateCartRequest
+import com.gianghv.uniqlo.data.source.remote.request.CreateOrderRequest
 import com.gianghv.uniqlo.data.source.remote.request.UpdateQuantityRequest
 import com.gianghv.uniqlo.data.source.remote.response.Affected
 import com.gianghv.uniqlo.data.source.remote.response.CreateCartResponse
+import com.gianghv.uniqlo.data.source.remote.response.CreateOrderResponse
 import com.gianghv.uniqlo.data.source.remote.response.UpdateQuantityResponse
 import com.gianghv.uniqlo.domain.CartItem
 import io.ktor.client.HttpClient
@@ -29,4 +32,10 @@ class CartApi(private val httpClient: HttpClient) {
         httpClient.post("$BASE_URL$CART_API_END_POINT/create") {
             setBody(CreateCartRequest(variationId, userId, quantity, size))
         }.body()
+
+    suspend fun createOrder(createOrderRequest: CreateOrderRequest): BaseResponse<CreateOrderResponse> = httpClient.post("$BASE_URL$ORDER_API_END_POINT/create") {
+        setBody(createOrderRequest)
+    }.body()
+
+    suspend fun getOrderByUserId(userId: Long): BaseResponse<List<CreateOrderResponse>> = httpClient.get("$BASE_URL$ORDER_API_END_POINT/$userId").body()
 }

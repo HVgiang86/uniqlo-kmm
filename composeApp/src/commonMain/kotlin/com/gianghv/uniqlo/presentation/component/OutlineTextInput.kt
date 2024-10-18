@@ -76,6 +76,7 @@ fun AppOutlinedTextField(
         mutableStateOf(TextFieldValue(initialValue))
     }
 
+
     // Used to decide if the keyboard should be shown
     var textFieldFocusState by remember { mutableStateOf(false) }
 
@@ -134,6 +135,81 @@ fun AppOutlinedTextField(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+fun ChatOutlinedTextField(
+    modifier: Modifier,
+    validator: ValidateHelper.(String) -> String? = { null },
+    inputWrapper: MutableState<InputWrapper> = remember { mutableStateOf(InputWrapper()) },
+    placeholder: String,
+    textState: MutableState<TextFieldValue>,
+    maxLines: Int = 1,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: ((String) -> Unit)? = null,
+    resetScroll: () -> Unit = {},
+    imeAction: ImeAction = ImeAction.Done,
+    onMessageSent: (String) -> Unit,
+    shape: Shape = RoundedCornerShape(4.dp),
+    textStyle: TextStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
+    onClick: () -> Unit = {}
+) {
+    // Used to decide if the keyboard should be shown
+    var textFieldFocusState by remember { mutableStateOf(false) }
+
+    Column {
+        UserInputTextOutlined(
+            onTextChanged = {
+                textState.value = it
+                inputWrapper.value = inputWrapper.value.updateValue(it.text, true)
+                inputWrapper.value = inputWrapper.value.validate { input ->
+                    validator(input)
+                }
+
+                if (inputWrapper.value.isValid) {
+                    onValueChange?.invoke(it.text)
+                }
+            },
+
+            hint = placeholder,
+            description = stringResource(Res.string.textfield_desc),
+            textFieldValue = textState.value,
+            keyboardShown = textFieldFocusState,
+            onTextFieldFocused = { focused ->
+                if (focused) {
+                    resetScroll()
+                }
+                textFieldFocusState = focused
+
+            },
+            onMessageSent = {
+                onMessageSent(textState.value.text)
+
+                textFieldFocusState = false
+
+                // Move scroll to bottom
+                resetScroll()
+            },
+            focusState = textFieldFocusState,
+            imeAction = imeAction,
+            shape = shape,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            modifier = modifier.height(52.dp),
+            maxLines = 1,
+            textStyle = textStyle,
+            onClick = onClick
+        )
+
+        if (!inputWrapper.value.isValid) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = inputWrapper.value.errorString ?: "", modifier = Modifier.padding(horizontal = 2.dp), style = Typography.bodySmall, color = Color.Red
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
 fun AppPasswordField(
     modifier: Modifier,
     validator: ValidateHelper.(String) -> String? = { null },
@@ -160,17 +236,18 @@ fun AppPasswordField(
     var textFieldFocusState by remember { mutableStateOf(false) }
 
     Column {
-        UserInputTextOutlined(onTextChanged = {
-            textState = it
-            inputWrapper.value = inputWrapper.value.updateValue(it.text, true)
-            inputWrapper.value = inputWrapper.value.validate { input ->
-                validator(input)
-            }
+        UserInputTextOutlined(
+            onTextChanged = {
+                textState = it
+                inputWrapper.value = inputWrapper.value.updateValue(it.text, true)
+                inputWrapper.value = inputWrapper.value.validate { input ->
+                    validator(input)
+                }
 
-            if (inputWrapper.value.isValid) {
-                onValueChange?.invoke(it.text)
-            }
-        },
+                if (inputWrapper.value.isValid) {
+                    onValueChange?.invoke(it.text)
+                }
+            },
             keyboardType = KeyboardType.Password,
             hint = placeholder,
             description = stringResource(Res.string.textfield_desc),
@@ -260,7 +337,8 @@ fun UserInputTextOutlined(
         modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            BaseOutlinedTextField(textFieldValue,
+            BaseOutlinedTextField(
+                textFieldValue,
                 hint,
                 onTextChanged,
                 onTextFieldFocused,
