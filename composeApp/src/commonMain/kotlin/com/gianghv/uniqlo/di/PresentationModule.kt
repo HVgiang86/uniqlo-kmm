@@ -22,5 +22,5 @@ val presentationModule = module {
     single { ProfileViewModel(get(), get()) }
     single { CartViewModel(get(), get(), get()) }
     single { AiChatViewModel(get(), get()) }
-    single { OrderViewModel() }
+    single { OrderViewModel(get(), get()) }
 }

@@ -1,6 +1,7 @@
 package com.gianghv.uniqlo.presentation.screen.order
 
 import com.gianghv.uniqlo.base.Reducer
+import com.gianghv.uniqlo.domain.CartItem
 import com.gianghv.uniqlo.domain.User
 
 sealed class OrderUiEvent : Reducer.UiEvent {
@@ -9,4 +10,5 @@ sealed class OrderUiEvent : Reducer.UiEvent {
     data class LoadUserDetailSuccess(val user: User) : OrderUiEvent()
     data object LoadSavedOrderInfo : OrderUiEvent()
     data class LoadSavedOrderInfoSuccess(val address: String? = "", val phone: String? = "") : OrderUiEvent()
+    data class SaveCartList(val carts: List<CartItem>) : OrderUiEvent()
 }

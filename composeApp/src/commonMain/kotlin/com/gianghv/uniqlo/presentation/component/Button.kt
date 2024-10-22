@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.sp
 import com.gianghv.uniqlo.theme.icons.ArrowRight
 
 @Composable
-fun RedFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, text: @Composable () -> Unit) {
+fun RedFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, enable: Boolean = true, text: @Composable () -> Unit) {
     FilledTextButton(
         onClick, modifier, colors = ButtonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             disabledContentColor = MaterialTheme.colorScheme.onTertiary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary
-        )
+        ), enable = enable
     ) {
         text()
     }
@@ -38,14 +38,14 @@ fun RedFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, text
 
 
 @Composable
-fun BlackFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, text: @Composable () -> Unit) {
+fun BlackFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, enable: Boolean = true, text: @Composable () -> Unit) {
     FilledTextButton(
         onClick, modifier, colors = ButtonColors(
             containerColor = Color.Black,
             contentColor = Color.White,
             disabledContentColor = MaterialTheme.colorScheme.onTertiary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary
-        )
+        ), enable = enable
     ) {
         text()
     }
@@ -53,7 +53,7 @@ fun BlackFilledTextButton(onClick: () -> Unit, modifier: Modifier = Modifier, te
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BlackButtonIconEnd(onClick: () -> Unit, modifier: Modifier = Modifier, text: @Composable () -> Unit) {
+fun BlackButtonIconEnd(onClick: () -> Unit, modifier: Modifier = Modifier, enable: Boolean = true, text: @Composable () -> Unit) {
 
     FilledTextButton(
         onClick, modifier = modifier.fillMaxWidth(), colors = ButtonColors(
@@ -61,7 +61,7 @@ fun BlackButtonIconEnd(onClick: () -> Unit, modifier: Modifier = Modifier, text:
             contentColor = Color.White,
             disabledContentColor = MaterialTheme.colorScheme.onTertiary,
             disabledContainerColor = MaterialTheme.colorScheme.tertiary
-        )
+        ), enable = enable
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
             text()
@@ -113,9 +113,10 @@ fun FilledTextButton(
     text: @Composable () -> Unit
 ) {
     Button(
+        enabled = enable,
         onClick = {
             onClick.invoke()
-        }, shape = RoundedCornerShape(8.dp), modifier = modifier, colors = colors, enabled = enable
+        }, shape = RoundedCornerShape(8.dp), modifier = modifier, colors = colors
     ) {
         text()
     }

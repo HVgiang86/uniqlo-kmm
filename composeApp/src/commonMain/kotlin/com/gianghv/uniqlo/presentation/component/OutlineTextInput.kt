@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -118,8 +120,8 @@ fun AppOutlinedTextField(
             shape = shape,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
-            modifier = modifier.height(52.dp),
-            maxLines = 1,
+            modifier = modifier.wrapContentHeight().heightIn(min = 52.dp),
+            maxLines = maxLines,
             textStyle = textStyle,
             onClick = onClick
         )

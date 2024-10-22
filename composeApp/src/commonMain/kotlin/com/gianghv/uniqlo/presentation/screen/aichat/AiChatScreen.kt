@@ -1,6 +1,7 @@
 package com.gianghv.uniqlo.presentation.screen.aichat
 
 import KottieAnimation
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -153,8 +154,8 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
                 mutableStateOf(TextFieldValue())
             }
 
-            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter)) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 1.dp, color = Color.LightGray)
+            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter).background(color = Color.White)) {
+                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), thickness = 1.dp, color = Color.LightGray)
                 Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                     ChatOutlinedTextField(modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
                         placeholder = "Some message...",

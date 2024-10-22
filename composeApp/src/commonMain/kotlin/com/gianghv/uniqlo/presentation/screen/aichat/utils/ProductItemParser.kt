@@ -9,7 +9,7 @@ import androidx.compose.ui.text.withStyle
 
 fun String.replaceProduct(list: List<Pair<Long, String>>): AnnotatedString = buildAnnotatedString {
     var lastIndex = 0
-    val regex = """\{\{(\d+)\}\}\[([^\]]+)\]""".toRegex()
+    val regex = """\{(\d+)\}\[([^\]]+)\]""".toRegex()
     regex.findAll(this@replaceProduct).forEach { matchResult ->
         val (id, name) = matchResult.destructured
         append(this@replaceProduct.substring(lastIndex, matchResult.range.first))
@@ -26,7 +26,7 @@ fun String.trimMessage(): String {
 }
 
 fun String.parseProductItems(): List<Pair<Long, String>> {
-    val regex = """\{\{(\d+)\}\}\[([^\]]+)\]""".toRegex()
+    val regex = """\{(\d+)\}\[([^\]]+)\]""".toRegex()
     return regex.findAll(this).map { matchResult ->
         val (id, name) = matchResult.destructured
         id.toLong() to name
