@@ -63,7 +63,7 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
     val state by viewModel.state.asState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    var animation by remember { mutableStateOf("") }
+
     val keyboardController = LocalSoftwareKeyboardController.current
 
 
@@ -72,21 +72,6 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
             if (state.chatMessages.isNotEmpty()) listState.animateScrollToItem(state.chatMessages.size - 1)
         }
     }
-
-    LaunchedEffect(Unit){
-        animation = Res.readBytes("files/typinganim.json").decodeToString()
-    }
-
-    val composition = rememberKottieComposition(
-        spec = KottieCompositionSpec.File(animation)
-    )
-
-    val animationState by animateKottieCompositionAsState(
-        composition = composition,
-        restartOnPlay = true,
-        isPlaying = true,
-        iterations = KottieConstants.IterateForever
-    )
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(AiChatUiEvent.LoadChatMessages)
@@ -123,6 +108,23 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
                     val listSize = if(state.isServerTyping) (chats.size + 1) else chats.size
                     items(listSize) { index ->
                         if (index == chats.size) {
+                            var animation by remember { mutableStateOf("") }
+
+                            LaunchedEffect(Unit){
+                                animation = Res.readBytes("files/typinganim.json").decodeToString()
+                            }
+
+                            val composition = rememberKottieComposition(
+                                spec = KottieCompositionSpec.File(animation)
+                            )
+
+                            val animationState by animateKottieCompositionAsState(
+                                composition = composition,
+                                restartOnPlay = true,
+                                isPlaying = true,
+                                iterations = KottieConstants.IterateForever
+                            )
+
                             KottieAnimation(
                                 composition = composition,
                                 progress = {
@@ -154,7 +156,7 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter)) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 1.dp, color = Color.LightGray)
                 Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                    ChatOutlinedTextField(modifier = Modifier.height(48.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
+                    ChatOutlinedTextField(modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
                         placeholder = "Some message...",
                         textState = textState,
                         onValueChange = {},

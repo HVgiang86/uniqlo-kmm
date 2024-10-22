@@ -69,7 +69,7 @@ class ProfileReducer(initialUiState: ProfileUiState, private val viewModel: Prof
             }
 
             ProfileUiEvent.LoadUser -> {
-                setState(oldState.copy(isLoading = true, error = null))
+                setState(oldState.copy(isLoading = true, error = null, user = null))
                 viewModel.getMyProfile()
             }
 

@@ -34,6 +34,7 @@ fun MainScreenDestination.asBottomNavItem(): BottomNavItem {
         MainScreenDestination.WishList -> BottomNavItem.WISH_LIST
         MainScreenDestination.AiChat -> BottomNavItem.AI_CHAT
         is MainScreenDestination.Profile -> BottomNavItem.PROFILE
+        MainScreenDestination.OrderHistory -> BottomNavItem.ORDER_HISTORY
         else -> BottomNavItem.HOME
     }
 }

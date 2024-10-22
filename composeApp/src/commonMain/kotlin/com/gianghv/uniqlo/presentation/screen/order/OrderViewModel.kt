@@ -5,7 +5,7 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import kotlinx.coroutines.flow.StateFlow
 
-class OrderViewModel : BaseViewModel<OrderUiState, OrderUiEvent>() {
+class OrderViewModel() : BaseViewModel<OrderUiState, OrderUiEvent>() {
     override val state: StateFlow<OrderUiState>
         get() = reducer.state
     override val reducer: Reducer<OrderUiState, OrderUiEvent>

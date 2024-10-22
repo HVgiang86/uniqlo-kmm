@@ -44,17 +44,19 @@ import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.cart.components.CartItemWidget
+import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.theme.Black
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.toCurrencyText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
+fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
     val scope = rememberCoroutineScope()
 
     val confirmDeleteDialog = remember { mutableStateOf<CartItem?>(null) }
+    val confirmOrderDialog = remember { mutableStateOf<List<CartItem>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(CartUiEvent.LoadOrder)
@@ -159,7 +161,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                     }
 
                     RedFilledTextButton(onClick = {
-
+                        confirmOrderDialog.value = state.selectedItems
                     }, modifier = Modifier.weight(1f), text = {
                         Text("Checkout", style = MaterialTheme.typography.titleSmall, color = Color.White)
                     })
@@ -175,6 +177,16 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                 confirmDeleteDialog.value = null
             }, leftBtnTitle = "Hủy", leftBtn = {
                 confirmDeleteDialog.value = null
+            })
+        }
+
+        val itemsToOrder = confirmOrderDialog.value
+        if (itemsToOrder.isNotEmpty()) {
+            MyAlertDialog(title = "Xác nhận đặt hàng", content = "Bạn xác nhận đặt hàng các sản phẩm đã chọn?", rightBtnTitle = "OK", rightBtn = {
+                navigateTo(MainScreenDestination.Order(mapOf(MainScreenDestination.Order.CART_ITEM_LIST_KEY to itemsToOrder)))
+                confirmOrderDialog.value = emptyList()
+            }, leftBtnTitle = "Hủy", leftBtn = {
+                confirmOrderDialog.value = emptyList()
             })
         }
 

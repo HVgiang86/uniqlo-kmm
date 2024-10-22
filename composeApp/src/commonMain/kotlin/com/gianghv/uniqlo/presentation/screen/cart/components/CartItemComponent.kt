@@ -106,12 +106,14 @@ fun CartItemWidget(
 
 
 @Composable
-fun QuantityComponent(modifier: Modifier = Modifier, quantity: Int, onQuantityChange: (Int) -> Unit, onRequestDelete: () -> Unit = {}) {
+fun QuantityComponent(modifier: Modifier = Modifier, quantity: Int, onQuantityChange: (Int) -> Unit, onRequestDelete: () -> Unit = {}, allowChangeQuantity: Boolean = true) {
     Row(modifier = modifier.wrapContentSize().clip(RoundedCornerShape(4.dp)).border(width = 1.dp, color = Color.LightGray, shape = RoundedCornerShape(4.dp))) {
-        Box(modifier = Modifier.align(Alignment.CenterVertically).clickable {
-            if (quantity > 1) onQuantityChange(quantity - 1) else onRequestDelete()
-        }) {
-            Text(text = "-", modifier = Modifier.padding(8.dp), color = Black, textAlign = TextAlign.Center)
+        if (allowChangeQuantity) {
+            Box(modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                if (quantity > 1) onQuantityChange(quantity - 1) else onRequestDelete()
+            }) {
+                Text(text = "-", modifier = Modifier.padding(8.dp), color = Black, textAlign = TextAlign.Center)
+            }
         }
 
         Text(
@@ -121,10 +123,12 @@ fun QuantityComponent(modifier: Modifier = Modifier, quantity: Int, onQuantityCh
             textAlign = TextAlign.Center
         )
 
-        Box(modifier = Modifier.align(Alignment.CenterVertically).clickable {
-            onQuantityChange(quantity + 1)
-        }) {
-            Text(text = "+", modifier = Modifier.padding(8.dp), color = Black, textAlign = TextAlign.Center)
+        if (allowChangeQuantity) {
+            Box(modifier = Modifier.align(Alignment.CenterVertically).clickable {
+                onQuantityChange(quantity + 1)
+            }) {
+                Text(text = "+", modifier = Modifier.padding(8.dp), color = Black, textAlign = TextAlign.Center)
+            }
         }
     }
 }

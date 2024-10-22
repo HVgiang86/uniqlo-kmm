@@ -18,6 +18,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.gianghv.uniqlo.base.getViewModel
+import com.gianghv.uniqlo.domain.CartItem
 import com.gianghv.uniqlo.presentation.screen.aichat.AIChatScreen
 import com.gianghv.uniqlo.presentation.screen.aichat.AiChatViewModel
 import com.gianghv.uniqlo.presentation.screen.cart.CartScreen
@@ -26,6 +27,9 @@ import com.gianghv.uniqlo.presentation.screen.home.HomeScreen
 import com.gianghv.uniqlo.presentation.screen.home.HomeViewModel
 import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
+import com.gianghv.uniqlo.presentation.screen.order.OrderScreen
+import com.gianghv.uniqlo.presentation.screen.order.OrderViewModel
+import com.gianghv.uniqlo.presentation.screen.orderhistory.OrderReducerHistoryScreen
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailScreen
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
@@ -61,6 +65,24 @@ abstract class WithParam(open val params: Map<String, Any>) : MainScreenDestinat
 abstract class LogoutFromDestination(open var onLogout: (() -> Unit)? = null) : MainScreenDestination
 
 interface MainScreenDestination {
+    class Order(params: Map<String, Any>) : Screen, WithParam(params) {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val viewModel: OrderViewModel = getViewModel()
+            val cartItems = getValue<List<CartItem>>(CART_ITEM_LIST_KEY) ?: emptyList()
+            OrderScreen(viewModel, navigateTo = {
+                navigator.navigate(it)
+            }, onBack = {
+                navigator.pop()
+            }, carts = cartItems)
+        }
+
+        companion object {
+            const val CART_ITEM_LIST_KEY = "cart_item_list_key"
+        }
+    }
+
     class ProductDetail(params: Map<String, Any>) : Screen, WithParam(params) {
         @Composable
         override fun Content() {
@@ -83,7 +105,7 @@ interface MainScreenDestination {
     object OrderHistory : Screen, TopLevelScreenDestination {
         @Composable
         override fun Content() {
-
+            OrderReducerHistoryScreen()
         }
 
         override fun getTitle() = "Order History"
@@ -117,6 +139,8 @@ interface MainScreenDestination {
             val viewModel: CartViewModel = getViewModel()
             CartScreen(viewModel, onBack = {
                 navigator.pop()
+            }, navigateTo = {
+                navigator.navigate(it)
             })
         }
     }
