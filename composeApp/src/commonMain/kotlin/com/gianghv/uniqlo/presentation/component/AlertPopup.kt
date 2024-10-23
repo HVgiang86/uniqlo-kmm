@@ -24,14 +24,18 @@ fun MyAlertDialog(
     leftBtn: (() -> Unit)? = null,
     rightBtn: (() -> Unit)? = null,
     state: MutableState<Boolean>? = null,
-    cancelable: Boolean = true
+    cancelable: Boolean = true,
+    onCanceled: (() -> Unit) = {}
 ) {
     AppLogger.d("MyAlertDialog: $title, $content, $leftBtnTitle, $rightBtnTitle, $leftBtn, $rightBtn, $state, $cancelable")
     val openDialog = state ?: remember { mutableStateOf(true) }
 
     if (openDialog.value) {
         AlertDialog(onDismissRequest = {
-            if (cancelable) openDialog.value = false
+            if (cancelable) {
+                openDialog.value = false
+                onCanceled()
+            }
         }, title = {
             Text(
                 text = title, modifier = Modifier.padding(top = 8.dp)
@@ -62,6 +66,7 @@ fun MyAlertDialog(
                 TextButton(onClick = {
                     // Handle dismiss button click here
                     leftBtn.invoke()
+                    onCanceled()
                     openDialog.value = false
                 }) {
                     Text(leftBtnTitle)

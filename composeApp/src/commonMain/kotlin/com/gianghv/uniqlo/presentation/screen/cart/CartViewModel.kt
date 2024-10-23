@@ -87,7 +87,7 @@ class CartReducer(initialVal: CartUiState, private val viewModel: CartViewModel)
             }
 
             CartUiEvent.LoadOrder -> {
-                setState(oldState.copy(isLoading = true, error = null))
+                setState(oldState.copy(isLoading = true, error = null, cartItems = emptyList(), selectedItems = emptyList()))
                 viewModel.loadOrder()
             }
 

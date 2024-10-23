@@ -78,7 +78,6 @@ fun AppOutlinedTextField(
         mutableStateOf(TextFieldValue(initialValue))
     }
 
-
     // Used to decide if the keyboard should be shown
     var textFieldFocusState by remember { mutableStateOf(false) }
 

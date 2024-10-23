@@ -187,6 +187,8 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
                 confirmOrderDialog.value = emptyList()
             }, leftBtnTitle = "Hủy", leftBtn = {
                 confirmOrderDialog.value = emptyList()
+            }, onCanceled = {
+                confirmOrderDialog.value = emptyList()
             })
         }
 

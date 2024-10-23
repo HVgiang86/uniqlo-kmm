@@ -3,6 +3,8 @@ package com.gianghv.uniqlo.presentation.screen.order
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.gianghv.uniqlo.theme.icons.CashStack
+import com.gianghv.uniqlo.theme.icons.IC_BANK
 
 sealed class PaymentMethod {
     data object Cash : PaymentMethod(), PaymentMethodBase {
@@ -11,7 +13,7 @@ sealed class PaymentMethod {
         }
 
         override fun getIcon(): ImageVector {
-            return Icons.Default.Face
+            return CashStack
         }
     }
 
@@ -21,7 +23,7 @@ sealed class PaymentMethod {
         }
 
         override fun getIcon(): ImageVector {
-            return Icons.Default.Face
+            return IC_BANK
         }
     }
 }

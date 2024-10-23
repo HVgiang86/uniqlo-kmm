@@ -8,6 +8,7 @@ import com.gianghv.uniqlo.data.AppRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileUiEvent
+import com.gianghv.uniqlo.util.logging.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow

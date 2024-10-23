@@ -60,22 +60,36 @@ import com.composables.core.rememberMenuState
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.CartItem
 import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
+import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.cart.components.QuantityComponent
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.wishlist.ProductImage
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.toCurrencyText
+import com.gianghv.uniqlo.util.logging.AppLogger
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> Unit, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
+    var backConfirmVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(OrderUiEvent.SaveCartList(carts))
 //        viewModel.sendEvent(OrderUiEvent.LoadSavedOrderInfo)
         viewModel.sendEvent(OrderUiEvent.LoadUserDetail(WholeApp.USER_ID))
+    }
+
+    if (backConfirmVisible) {
+        MyAlertDialog(title = "Huỷ bỏ order?", content = "Bạn có chắc muốn huỷ không?", rightBtn = {
+            onBack()
+            backConfirmVisible = false
+        }, rightBtnTitle = "Hủy", leftBtnTitle = "Thôi", leftBtn = {
+            backConfirmVisible = false
+        }, onCanceled = {
+            backConfirmVisible = false
+        })
     }
 
     Scaffold(topBar = {
@@ -88,7 +102,9 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
                 Icon(imageVector = Icons.Default.Menu, contentDescription = null)
             }
         }, navigationIcon = {
-            IconButton(onClick = onBack) {
+            IconButton(onClick = {
+                backConfirmVisible = true
+            }) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             }
         })
@@ -117,13 +133,14 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
                             modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
                         )
                     } else if (index <= cartList.size && index > 0) {
-                        CartItemComponent(modifier = Modifier.padding(vertical = 32.dp), cartItem = cartList[index - 1], boxWidth = boxWidth, onClick = {})
+                        CartItemComponent(modifier = Modifier.padding(horizontal = 32.dp), cartItem = cartList[index - 1], boxWidth = boxWidth, onClick = {})
                     } else if (index == cartList.size + 1) {
+                        AppLogger.d("Hehe1 ${state}")
                         OrderInfoComponent(totalPayment = totalPrice,
                             paymentMethod = PaymentMethod.Cash,
                             phone = state.phone ?: "",
                             address = state.address ?: "",
-                            email = state.orderName ?: "",
+                            email = state.email ?: "",
                             onOrderInfoChange = { _, _, _, _ ->
 
                             })
@@ -303,7 +320,7 @@ fun DropdownPaymentMethod(modifier: Modifier = Modifier, initial: PaymentMethodB
                 }) {
                     Row(modifier = Modifier.fillMaxWidth().height(52.dp)) {
                         Icon(
-                            imageVector = option.getIcon(), contentDescription = null, modifier = Modifier.align(Alignment.CenterVertically)
+                            imageVector = option.getIcon(), contentDescription = null, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
                         )
                         BasicText(
                             option.getTitle(),
