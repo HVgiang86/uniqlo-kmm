@@ -1,5 +1,9 @@
 package com.gianghv.uniqlo.data
 
+import com.gianghv.uniqlo.domain.SaveOrderInfo
+import com.gianghv.uniqlo.presentation.screen.order.PaymentMethod
+import com.gianghv.uniqlo.presentation.screen.order.PaymentMethodBase
+
 interface AppRepository {
     suspend fun isFirstRun(): Boolean
     suspend fun setFirstRun(isFirstRun: Boolean)
@@ -11,8 +15,9 @@ interface AppRepository {
     suspend fun setRecommendationUrl(url: String)
     suspend fun getChatUrl(): String?
     suspend fun setChatUrl(url: String)
-    suspend fun getUserAddress(): String?
-    suspend fun setUserAddress(address: String)
-    suspend fun getUserPhone(): String?
-    suspend fun setUserPhone(phone: String)
+    suspend fun setSavedOrderInfo(
+        userId: Long = -1L, address: String? = "", email: String? = "", phone: String? = "", paymentMethod: PaymentMethodBase? = PaymentMethod.Cash
+    )
+
+    suspend fun getSavedOrderInfo(): SaveOrderInfo?
 }

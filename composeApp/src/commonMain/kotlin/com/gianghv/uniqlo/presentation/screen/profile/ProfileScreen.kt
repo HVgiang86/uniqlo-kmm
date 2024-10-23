@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,7 +30,6 @@ import com.composables.core.rememberModalBottomSheetState
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
-import com.gianghv.uniqlo.presentation.screen.profile.components.GoToDialogDeepLink
 import com.gianghv.uniqlo.presentation.screen.profile.components.GoToProductDialog
 import com.gianghv.uniqlo.presentation.screen.profile.components.SettingBottomSheet
 import com.gianghv.uniqlo.util.asState
@@ -77,7 +77,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestinatio
                 dialogState.visible = true
             }) {
                 com.composables.core.Icon(
-                    imageVector = Icons.Default.Send, contentDescription = null, tint = Color.Black
+                    imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color.Black
                 )
             }
 

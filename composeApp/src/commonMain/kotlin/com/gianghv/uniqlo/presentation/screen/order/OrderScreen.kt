@@ -59,7 +59,9 @@ import com.composables.core.MenuItem
 import com.composables.core.rememberMenuState
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.CartItem
+import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
+import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.cart.components.QuantityComponent
@@ -67,18 +69,52 @@ import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestinat
 import com.gianghv.uniqlo.presentation.screen.wishlist.ProductImage
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.toCurrencyText
-import com.gianghv.uniqlo.util.logging.AppLogger
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> Unit, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
     var backConfirmVisible by remember { mutableStateOf(false) }
+    var saveOrderInfoDialog by remember { mutableStateOf(false) }
+    var confirmOrderDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(OrderUiEvent.SaveCartList(carts))
-//        viewModel.sendEvent(OrderUiEvent.LoadSavedOrderInfo)
+        viewModel.sendEvent(OrderUiEvent.LoadSavedOrderInfo)
         viewModel.sendEvent(OrderUiEvent.LoadUserDetail(WholeApp.USER_ID))
+    }
+
+    if (state.isLoading) {
+        LoadingDialog()
+    }
+
+    if (state.error != null) {
+        AppErrorDialog(state.error?.throwable, onDismissRequest = { })
+    }
+
+    if (state.createOrderResult == CreateOrderResult.CASH) {
+        navigateTo(MainScreenDestination.OrderResult(mapOf(MainScreenDestination.OrderResult.IS_ORDER_SUCCESS_KEY to true)))
+    }
+
+    if (state.createOrderResult == CreateOrderResult.VNPAY) {
+        navigateTo(
+            MainScreenDestination.Payment(
+                mapOf(
+                    MainScreenDestination.Payment.ORDER_ID_KEY to (state.orderId ?: -1L), MainScreenDestination.Payment.AMOUNT_KEY to (state.total ?: 0L)
+                )
+            )
+        )
+    }
+
+    if (confirmOrderDialog) {
+        MyAlertDialog(title = "Xác nhận đặt hàng?", content = "Bạn xác nhận đơn hàng?", rightBtn = {
+            saveOrderInfoDialog = true
+            confirmOrderDialog = false
+        }, rightBtnTitle = "OK", leftBtnTitle = "Huỷ", leftBtn = {
+            confirmOrderDialog = false
+        }, onCanceled = {
+            confirmOrderDialog = false
+        })
     }
 
     if (backConfirmVisible) {
@@ -90,6 +126,21 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
         }, onCanceled = {
             backConfirmVisible = false
         })
+    }
+
+    if (saveOrderInfoDialog) {
+        MyAlertDialog(title = "Lưu thông tin order?", content = "Bạn có muốn lưu thông tin đặt hàng không?", rightBtn = {
+            viewModel.sendEvent(
+                OrderUiEvent.SaveOrderInfo(
+                    phone = state.phone, address = state.address, email = state.email, paymentMethod = state.paymentMethod
+                )
+            )
+            viewModel.sendEvent(OrderUiEvent.CreateOrder)
+            saveOrderInfoDialog = false
+        }, rightBtnTitle = "Lưu", leftBtnTitle = "Huỷ", leftBtn = {
+            viewModel.sendEvent(OrderUiEvent.CreateOrder)
+            saveOrderInfoDialog = false
+        }, cancelable = false)
     }
 
     Scaffold(topBar = {
@@ -110,10 +161,11 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
         })
     }) {
         val cartList = state.carts
+        val user = state.user
         var boxWidth by remember { mutableStateOf(0.dp) }
         var confirmBarHeight by remember { mutableStateOf(0.dp) }
         val density = LocalDensity.current
-        val totalPrice = cartList.sumOf { it.variation?.price ?: 0.0 }
+        val totalPrice = cartList.sumOf { (it.variation?.price ?: 0.0) * (it.quantity ?: 1) }
         val totalPayment = (totalPrice + 50.0 + 30.0) * 1000
 
         Box(modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())
@@ -135,15 +187,17 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
                     } else if (index <= cartList.size && index > 0) {
                         CartItemComponent(modifier = Modifier.padding(horizontal = 32.dp), cartItem = cartList[index - 1], boxWidth = boxWidth, onClick = {})
                     } else if (index == cartList.size + 1) {
-                        AppLogger.d("Hehe1 ${state}")
-                        OrderInfoComponent(totalPayment = totalPrice,
-                            paymentMethod = PaymentMethod.Cash,
-                            phone = state.phone ?: "",
-                            address = state.address ?: "",
-                            email = state.email ?: "",
-                            onOrderInfoChange = { _, _, _, _ ->
-
-                            })
+                        if (user != null && state.isHistoryLoaded) {
+                            OrderInfoComponent(totalPayment = totalPrice,
+                                paymentMethod = PaymentMethod.Cash,
+                                phone = state.phone ?: "",
+                                address = state.address ?: "",
+                                email = state.email ?: "",
+                                orderName = state.orderName ?: "",
+                                onOrderInfoChange = { paymentMethod, phone, address, email, orderName ->
+                                    viewModel.sendEvent(OrderUiEvent.ChangeOrderInfo(address, email, phone, paymentMethod, orderName))
+                                })
+                        }
                     } else if (index == cartList.size + 2) {
                         Spacer(modifier = Modifier.height(confirmBarHeight))
                     }
@@ -153,7 +207,9 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
             OrderConfirmPanel(modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned {
                 val heightInPx = it.size.height
                 confirmBarHeight = with(density) { heightInPx.toDp() }
-            }, totalPayment = totalPayment, onOrderConfirm = {})
+            }, totalPayment = totalPayment, onOrderConfirm = {
+                confirmOrderDialog = true
+            })
         }
     }
 }
@@ -166,8 +222,16 @@ fun OrderInfoComponent(
     phone: String,
     address: String,
     email: String,
-    onOrderInfoChange: (PaymentMethodBase, String, String, String) -> Unit
+    orderName: String,
+    onOrderInfoChange: (PaymentMethodBase, String, String, String, String) -> Unit
 ) {
+    val paymentMethodState = remember { mutableStateOf(paymentMethod) }
+    val phoneState = remember { mutableStateOf(phone) }
+    val addressState = remember { mutableStateOf(address) }
+    val emailState = remember { mutableStateOf(email) }
+    val orderNameState = remember { mutableStateOf(orderName) }
+
+
     Column(modifier = modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 32.dp, vertical = 8.dp)) {
         HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp))
         Text(
@@ -182,7 +246,7 @@ fun OrderInfoComponent(
                 modifier = Modifier.weight(1f).align(Alignment.CenterVertically)
             )
 
-            val totalPaymentText = (totalPayment*1000).toCurrencyText()
+            val totalPaymentText = (totalPayment * 1000).toCurrencyText()
             Text(
                 totalPaymentText,
                 style = MaterialTheme.typography.bodyLarge,
@@ -232,44 +296,67 @@ fun OrderInfoComponent(
             "Payment Method", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        DropdownPaymentMethod(modifier = Modifier.fillMaxWidth(), initial = paymentMethod)
+        DropdownPaymentMethod(modifier = Modifier.fillMaxWidth(), initial = paymentMethod, onPaymentMethodChange = {
+            paymentMethodState.value = it
+            onOrderInfoChange(it, phoneState.value, addressState.value, emailState.value, orderNameState.value)
+        })
+
+        Text(
+            "Order title", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        )
+
+        AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp),
+            initialValue = orderNameState.value,
+            onValueChange = {
+                orderNameState.value = it
+                onOrderInfoChange(paymentMethodState.value, phoneState.value, addressState.value, emailState.value, it)
+            },
+            onMessageSent = {
+                orderNameState.value = it
+                onOrderInfoChange(paymentMethodState.value, phoneState.value, addressState.value, emailState.value, it)
+            },
+            maxLines = 4,
+            placeholder = "Order title",
+            imeAction = ImeAction.Done
+        )
 
         Text(
             "Phone number", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp),
-            initialValue = phone,
-            onValueChange = {},
-            onMessageSent = {},
-            maxLines = 4,
-            placeholder = "09xxxxxxxx",
-            imeAction = ImeAction.Done
+        AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp), initialValue = phoneState.value, onValueChange = {
+            phoneState.value = it
+            onOrderInfoChange(paymentMethodState.value, it, addressState.value, emailState.value, orderNameState.value)
+        }, onMessageSent = {
+            phoneState.value = it
+            onOrderInfoChange(paymentMethodState.value, it, addressState.value, emailState.value, orderNameState.value)
+        }, maxLines = 4, placeholder = "09xxxxxxxx", imeAction = ImeAction.Done
         )
 
         Text(
             "Address", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp),
-            initialValue = address,
-            onValueChange = {},
-            onMessageSent = {},
-            maxLines = 4,
-            placeholder = "Address",
-            imeAction = ImeAction.Done
+        AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp), initialValue = addressState.value, onValueChange = {
+            addressState.value = it
+            onOrderInfoChange(paymentMethodState.value, phoneState.value, it, emailState.value, orderNameState.value)
+        }, onMessageSent = {
+            addressState.value = it
+            onOrderInfoChange(paymentMethodState.value, phoneState.value, it, emailState.value, orderNameState.value)
+        }, maxLines = 4, placeholder = "Address", imeAction = ImeAction.Done
         )
 
         Text(
             "Send Receipt to ", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        AppOutlinedTextField(modifier = Modifier.fillMaxWidth(),
-            initialValue = email,
-            onValueChange = {},
-            onMessageSent = {},
-            placeholder = "Email address",
-            imeAction = ImeAction.Done
+        AppOutlinedTextField(modifier = Modifier.fillMaxWidth(), initialValue = emailState.value, onValueChange = {
+            emailState.value = it
+            onOrderInfoChange(paymentMethodState.value, phoneState.value, addressState.value, it, orderNameState.value)
+        }, onMessageSent = {
+            emailState.value = it
+            onOrderInfoChange(paymentMethodState.value, phoneState.value, addressState.value, it, orderNameState.value)
+        }, placeholder = "Email address", imeAction = ImeAction.Done
         )
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -277,7 +364,9 @@ fun OrderInfoComponent(
 }
 
 @Composable
-fun DropdownPaymentMethod(modifier: Modifier = Modifier, initial: PaymentMethodBase? = PaymentMethod.Cash) {
+fun DropdownPaymentMethod(
+    modifier: Modifier = Modifier, initial: PaymentMethodBase? = PaymentMethod.Cash, onPaymentMethodChange: (PaymentMethodBase) -> Unit = {}
+) {
     val state = rememberMenuState(expanded = false)
     val selected = remember { mutableStateOf(initial) }
     val list = listOf(PaymentMethod.Cash, PaymentMethod.VNPay)
@@ -317,10 +406,13 @@ fun DropdownPaymentMethod(modifier: Modifier = Modifier, initial: PaymentMethodB
                 MenuItem(modifier = Modifier.clip(RoundedCornerShape(4.dp)), onClick = {
                     state.expanded = false
                     selected.value = option
+                    onPaymentMethodChange(option)
                 }) {
                     Row(modifier = Modifier.fillMaxWidth().height(52.dp)) {
                         Icon(
-                            imageVector = option.getIcon(), contentDescription = null, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
+                            imageVector = option.getIcon(),
+                            contentDescription = null,
+                            modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
                         )
                         BasicText(
                             option.getTitle(),

@@ -8,4 +8,5 @@ object ApiEndPoint {
     const val USER_API_END_POINT = "accounts"
     const val CART_API_END_POINT = "carts"
     const val ORDER_API_END_POINT = "orders"
+    const val VNPAY_API_END_POINT = "vnpay"
 }

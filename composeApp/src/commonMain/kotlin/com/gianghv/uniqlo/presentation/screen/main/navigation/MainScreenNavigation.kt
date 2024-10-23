@@ -29,7 +29,11 @@ import com.gianghv.uniqlo.presentation.screen.main.MainScreen
 import com.gianghv.uniqlo.presentation.screen.main.MainViewModel
 import com.gianghv.uniqlo.presentation.screen.order.OrderScreen
 import com.gianghv.uniqlo.presentation.screen.order.OrderViewModel
-import com.gianghv.uniqlo.presentation.screen.orderhistory.OrderReducerHistoryScreen
+import com.gianghv.uniqlo.presentation.screen.orderhistory.OrderHistoryScreen
+import com.gianghv.uniqlo.presentation.screen.orderhistory.OrderHistoryViewModel
+import com.gianghv.uniqlo.presentation.screen.orderresult.OrderResultScreen
+import com.gianghv.uniqlo.presentation.screen.payment.PaymentScreen
+import com.gianghv.uniqlo.presentation.screen.payment.PaymentViewModel
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailScreen
 import com.gianghv.uniqlo.presentation.screen.productdetail.ProductDetailViewModel
 import com.gianghv.uniqlo.presentation.screen.profile.ProfileScreen
@@ -105,7 +109,11 @@ interface MainScreenDestination {
     object OrderHistory : Screen, TopLevelScreenDestination {
         @Composable
         override fun Content() {
-            OrderReducerHistoryScreen()
+            val navigator = LocalNavigator.currentOrThrow
+            val viewModel: OrderHistoryViewModel = getViewModel()
+            OrderHistoryScreen(viewModel = viewModel, navigateTo = {
+                navigator.navigate(it)
+            })
         }
 
         override fun getTitle() = "Order History"
@@ -202,6 +210,41 @@ interface MainScreenDestination {
 
     fun getTitle(): String {
         return ""
+    }
+
+    class OrderResult(params: Map<String, Any>) : Screen, WithParam(params) {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val isOrderSuccess: Boolean = getValue(IS_ORDER_SUCCESS_KEY, false)
+            OrderResultScreen(isOrderSuccess = isOrderSuccess, navigateToHome = {
+                navigator.navigate(it)
+            })
+        }
+
+        companion object {
+            const val IS_ORDER_SUCCESS_KEY = "is_order_success_key"
+        }
+    }
+
+    class Payment(params: Map<String, Any>) : Screen, WithParam(params) {
+        @Composable
+        override fun Content() {
+            val navigator = LocalNavigator.currentOrThrow
+            val orderId: Long? = getValue(ORDER_ID_KEY)
+            val amount: Double? = getValue(AMOUNT_KEY)
+            val viewModel: PaymentViewModel = getViewModel()
+            PaymentScreen(viewModel, orderId = orderId, amount = amount, onBack = {
+                navigator.pop()
+            }, navigateTo = {
+                navigator.navigate(it)
+            })
+        }
+
+        companion object {
+            const val ORDER_ID_KEY = "order_id_key"
+            const val AMOUNT_KEY = "amount_key"
+        }
     }
 }
 

@@ -59,7 +59,6 @@ import uniqlo.composeapp.generated.resources.ic_dark_uniqlo
 fun WishListScreen(viewModel: WishListViewModel, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
 
-    val uriHandler = LocalUriHandler.current
     val toasterState = rememberToasterState()
 
     LaunchedEffect(Unit) {

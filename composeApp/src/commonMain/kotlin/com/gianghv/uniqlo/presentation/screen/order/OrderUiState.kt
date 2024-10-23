@@ -16,7 +16,11 @@ data class OrderUiState(
     val address: String? = "",
     val phone: String? = "",
     val orderName: String? = "",
-    val paymentMethod: PaymentMethodBase? = PaymentMethod.Cash
+    val paymentMethod: PaymentMethodBase? = PaymentMethod.Cash,
+    val isHistoryLoaded: Boolean = false,
+    val createOrderResult: CreateOrderResult? = CreateOrderResult.NOT_YET,
+    val orderId: Long? = null,
+    val total: Double? = null,
 
     ) : Reducer.UiState(isLoading, error) {
     companion object {

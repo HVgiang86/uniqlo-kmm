@@ -2,10 +2,15 @@ package com.gianghv.uniqlo.data.repository
 
 import com.gianghv.uniqlo.coredata.BaseRepository
 import com.gianghv.uniqlo.data.AppRepository
+import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.data.source.preferences.UserPreferences
 import com.gianghv.uniqlo.data.source.preferences.UserPreferences.Keys.KEY_IS_LOGIN
 import com.gianghv.uniqlo.data.source.preferences.UserPreferences.Keys.KEY_IS_ONBOARD_SHOWN
+import com.gianghv.uniqlo.domain.SaveOrderInfo
+import com.gianghv.uniqlo.presentation.screen.order.PaymentMethodBase
 import com.gianghv.uniqlo.util.logging.AppLogger
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class AppRepositoryImpl(private val userPreferences: UserPreferences) : AppRepository, BaseRepository() {
     override suspend fun isFirstRun(): Boolean = userPreferences.getBoolean(KEY_IS_ONBOARD_SHOWN, defaultValue = true)
@@ -27,21 +32,34 @@ class AppRepositoryImpl(private val userPreferences: UserPreferences) : AppRepos
     override suspend fun getChatUrl(): String? = userPreferences.getString(UserPreferences.KEY_CHAT_URL)
 
     override suspend fun setChatUrl(url: String) = userPreferences.putString(UserPreferences.KEY_CHAT_URL, url)
-    override suspend fun getUserAddress(): String? {
-        return userPreferences.getString(UserPreferences.KEY_USER_ADDRESS)
+    override suspend fun setSavedOrderInfo(userId: Long, address: String?, email: String?, phone: String?, paymentMethod: PaymentMethodBase?) {
+        val saveOrderInfoList = getAllSavedOrderInfo().toMutableList()
+
+        val find = saveOrderInfoList.find { it.id == userId }
+
+        val saveOrderInfo = SaveOrderInfo(userId, address, email, phone, paymentMethod?.getName() ?: "")
+
+        if (find != null) {
+            saveOrderInfoList.remove(find)
+            saveOrderInfoList.add(saveOrderInfo)
+        } else {
+            saveOrderInfoList.add(saveOrderInfo)
+        }
+
+        userPreferences.putString(UserPreferences.KEY_ORDER_INFO, Json.encodeToString(saveOrderInfoList))
     }
 
-    override suspend fun setUserAddress(address: String) {
-        userPreferences.putString(UserPreferences.KEY_USER_ADDRESS, address)
+    override suspend fun getSavedOrderInfo(): SaveOrderInfo? {
+        val json = userPreferences.getString(UserPreferences.KEY_ORDER_INFO)
+        if (json.isNullOrEmpty()) return null
+        val saveOrderInfoList = Json.decodeFromString<List<SaveOrderInfo>>(json)
+        return saveOrderInfoList.find { it.id == WholeApp.USER_ID }
     }
 
-    override suspend fun getUserPhone(): String? {
-        return userPreferences.getString(UserPreferences.KEY_USER_PHONE_NUMBER)
+    private suspend fun getAllSavedOrderInfo(): List<SaveOrderInfo> {
+        val json = userPreferences.getString(UserPreferences.KEY_ORDER_INFO)
+        if (json.isNullOrEmpty()) return emptyList()
+        return Json.decodeFromString<List<SaveOrderInfo>>(json)
     }
-
-    override suspend fun setUserPhone(phone: String) {
-        userPreferences.putString(UserPreferences.KEY_USER_PHONE_NUMBER, phone)
-    }
-
 
 }

@@ -9,6 +9,7 @@ import com.gianghv.uniqlo.data.source.remote.response.CreateCartResponse
 import com.gianghv.uniqlo.data.source.remote.response.CreateOrderResponse
 import com.gianghv.uniqlo.data.source.remote.response.UpdateQuantityResponse
 import com.gianghv.uniqlo.domain.CartItem
+import com.gianghv.uniqlo.domain.OrderHistory
 import kotlinx.coroutines.flow.Flow
 
 class CartRepositoryImpl(private val cartRemote: CartRemote) : CartRepository, BaseRepository() {
@@ -35,6 +36,22 @@ class CartRepositoryImpl(private val cartRemote: CartRemote) : CartRepository, B
     }
 
     override suspend fun createOrder(createOrderRequest: CreateOrderRequest): Flow<CreateOrderResponse> = flowContext {
-        cartRemote.createOrder(createOrderRequest)
+        cartRemote.createOrder(createOrderRequest).mapDataOnSuccess {
+            it.first()
+        }
+    }
+
+    override suspend fun createVNPayLink(amount: Long): Flow<String> = flowContext {
+        cartRemote.createVNPayLink(amount)
+    }
+
+    override suspend fun getOrderHistory(userId: Long): Flow<List<OrderHistory>> = flowContext {
+        cartRemote.getOrderHistory(userId)
+    }
+
+    override suspend fun updateOrderStatus(orderId: Long, status: String): Flow<String> {
+        return flowContext {
+            cartRemote.updateOrderStatus(orderId, status)
+        }
     }
 }
