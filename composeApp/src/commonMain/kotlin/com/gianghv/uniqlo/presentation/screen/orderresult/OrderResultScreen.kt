@@ -1,6 +1,6 @@
 package com.gianghv.uniqlo.presentation.screen.orderresult
 
-import KottieAnimation
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,13 +27,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.gianghv.uniqlo.presentation.component.BlackFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.delay
-import kottieComposition.KottieCompositionSpec
-import kottieComposition.animateKottieCompositionAsState
-import kottieComposition.rememberKottieComposition
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import uniqlo.composeapp.generated.resources.Res
-import utils.KottieConstants
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -48,16 +48,6 @@ fun OrderResultScreen(isOrderSuccess: Boolean = false, navigateToHome: (MainScre
             }) {
 
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.Center)) {
-                var animation by remember { mutableStateOf("") }
-
-                LaunchedEffect(Unit) {
-                    if (isOrderSuccess) {
-                        animation = Res.readBytes("files/anim_order_success.json").decodeToString()
-                    } else {
-                        animation = Res.readBytes("files/anim_order_fail.json").decodeToString()
-                    }
-                }
-
                 var remainingTime by remember { mutableStateOf(5) }
 
                 LaunchedEffect(Unit) {
@@ -68,31 +58,33 @@ fun OrderResultScreen(isOrderSuccess: Boolean = false, navigateToHome: (MainScre
                     navigateToHome(MainScreenDestination.Home)
                 }
 
-                val composition = rememberKottieComposition(
-                    spec = KottieCompositionSpec.File(animation)
-                )
+                val composition by rememberLottieComposition {
+                    LottieCompositionSpec.JsonString(
+                        if (isOrderSuccess) {
+                            Res.readBytes("files/anim_order_success.json").decodeToString()
+                        } else {
+                            Res.readBytes("files/anim_order_fail.json").decodeToString()
+                        }
+                    )
+                }
 
-                val animationState by animateKottieCompositionAsState(
-                    composition = composition, restartOnPlay = true, isPlaying = true, iterations = KottieConstants.IterateForever
-                )
-
-                KottieAnimation(
-                    composition = composition, progress = {
-                        animationState.progress
-                    }, modifier = Modifier.size(boxWidth * 0.4f).align(Alignment.CenterHorizontally)
+                Image(
+                    painter = rememberLottiePainter(
+                        composition = composition, iterations = Compottie.IterateForever
+                    ), contentDescription = "Lottie animation", modifier = Modifier.size(boxWidth * 0.4f).align(Alignment.CenterHorizontally)
                 )
 
                 Spacer(modifier = Modifier.size(16.dp))
                 if (isOrderSuccess) {
-                    Text(text = "Order Success", style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.CenterHorizontally))
+                    Text(text = "Đặt hàng thành công", style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.CenterHorizontally))
                 } else {
-                    Text(text = "Order Fail", style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.CenterHorizontally))
+                    Text(text = "Đặt hàng thất bại", style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.CenterHorizontally))
                 }
 
                 Spacer(modifier = Modifier.size(16.dp))
 
                 BlackFilledTextButton(text = {
-                    Text(text = "Back to Home after ${remainingTime}s")
+                    Text(text = "Về trang chủ sau ${remainingTime}s")
                 }, onClick = {
                     navigateToHome(MainScreenDestination.Home)
                 }, modifier = Modifier.align(Alignment.CenterHorizontally))

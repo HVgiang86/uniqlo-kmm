@@ -145,7 +145,7 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
 
     Scaffold(topBar = {
         TopAppBar(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), title = {
-            Text(text = "Create Order", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(text = "Đặt hàng", style = MaterialTheme.typography.titleMedium, color = Color.Black)
         }, actions = {
             IconButton(onClick = {
 
@@ -179,7 +179,7 @@ fun OrderScreen(viewModel: OrderViewModel, carts: List<CartItem>, onBack: () -> 
                 items(cartList.size + 3) { index ->
                     if (index == 0) {
                         Text(
-                            "Order Items",
+                            "Sản phẩm",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.Black,
                             modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
@@ -235,11 +235,11 @@ fun OrderInfoComponent(
     Column(modifier = modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 32.dp, vertical = 8.dp)) {
         HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp))
         Text(
-            "Summary", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(vertical = 8.dp)
+            "Thông tin đơn hàng", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(vertical = 8.dp)
         )
         Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 8.dp)) {
             Text(
-                "Subtotal",
+                "Tổng tiền",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black,
                 textAlign = TextAlign.Start,
@@ -259,7 +259,7 @@ fun OrderInfoComponent(
         val shippingPriceText = (50.0 * 1000).toCurrencyText()
         Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 8.dp)) {
             Text(
-                "Shipment Price",
+                "Chi phí vận chuyển",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black,
                 textAlign = TextAlign.Start,
@@ -277,7 +277,7 @@ fun OrderInfoComponent(
         val insurancePriceText = (30.0 * 1000).toCurrencyText()
         Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 8.dp)) {
             Text(
-                "Insurance",
+                "Bảo hiểm",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black,
                 textAlign = TextAlign.Start,
@@ -293,7 +293,7 @@ fun OrderInfoComponent(
         }
 
         Text(
-            "Payment Method", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(vertical = 8.dp)
+            "Phương thức thanh toán", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(vertical = 8.dp)
         )
 
         DropdownPaymentMethod(modifier = Modifier.fillMaxWidth(), initial = paymentMethod, onPaymentMethodChange = {
@@ -302,7 +302,7 @@ fun OrderInfoComponent(
         })
 
         Text(
-            "Order title", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            "Tiêu đề đơn hàng", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
         AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp),
@@ -321,7 +321,7 @@ fun OrderInfoComponent(
         )
 
         Text(
-            "Phone number", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            "Số điện thoại", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
         AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp), initialValue = phoneState.value, onValueChange = {
@@ -334,7 +334,7 @@ fun OrderInfoComponent(
         )
 
         Text(
-            "Address", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            "Địa chỉ", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
         AppOutlinedTextField(modifier = Modifier.fillMaxWidth().wrapContentHeight().heightIn(min = 52.dp), initialValue = addressState.value, onValueChange = {
@@ -347,7 +347,7 @@ fun OrderInfoComponent(
         )
 
         Text(
-            "Send Receipt to ", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            "Email", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
         AppOutlinedTextField(modifier = Modifier.fillMaxWidth(), initialValue = emailState.value, onValueChange = {
@@ -448,7 +448,7 @@ fun OrderConfirmPanel(modifier: Modifier = Modifier, totalPayment: Double = 0.0,
                     )
 
                     Text(
-                        "I agree to payment Terms & Condition",
+                        "Tôi đồng ý với Điều khoản & Điều kiện thanh toán",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Black,
                         modifier = Modifier.align(Alignment.CenterVertically)

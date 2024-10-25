@@ -100,7 +100,7 @@ fun LoginScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.co
                     // do login
                     viewModel.login(email.value, password.value)
                 }, text = {
-                    Text(text = "Continue", color = Color.White)
+                    Text(text = "Đăng nhập", color = Color.White)
                 })
 
                 Spacer(Modifier.height(24.dp))
@@ -118,7 +118,7 @@ fun LoginScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.co
                     // do sign up navigate
                     viewModel.reducer.sendEvent(AuthEvent.DisplaySignUp)
                 }, text = {
-                    Text(text = "Sign up", color = Color.Black)
+                    Text(text = "Đăng ký", color = Color.Black)
                 }, modifier = Modifier.fillMaxWidth().height(52.dp), enable = true
                 )
             }

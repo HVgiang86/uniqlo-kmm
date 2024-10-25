@@ -83,12 +83,12 @@ kotlin {
             implementation(libs.multiplatformSettings.noargs)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
-            implementation("com.composables:core:1.15.0")
-            implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
-            implementation("io.github.dokar3:sonner:0.3.8")
-            implementation("dev.icerock.moko:socket-io:0.6.0")
-            implementation("io.github.ismai117:kottie:2.0.1")
-            api("io.github.kevinnzou:compose-webview-multiplatform:1.9.20")
+            implementation(libs.core)
+            implementation(libs.font.awesome)
+            implementation(libs.sonner)
+            api(libs.compose.webview.multiplatform)
+            implementation(libs.compottie)
+            implementation(libs.compottie.resources)
         }
 
         commonTest.dependencies {

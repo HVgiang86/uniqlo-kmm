@@ -85,10 +85,10 @@ fun VariantPickerBottomSheet(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Product Variation", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+                Text("Chọn màu sắc, kích thước", style = MaterialTheme.typography.titleSmall, color = Color.Black)
 
                 Text(
-                    "Please select the product variant currently available",
+                    "Tự tin chọn màu bạn muốn!",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(top = 8.dp)
@@ -139,10 +139,10 @@ fun AddCartBottomSheet(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Product Variation", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+                Text("Chọn màu sắc, kích thước", style = MaterialTheme.typography.titleSmall, color = Color.Black)
 
                 Text(
-                    "Please select the product variant currently available",
+                    "Tự tin chọn màu bạn muốn!",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(top = 8.dp)
@@ -258,7 +258,7 @@ fun ProductVariationSelectSection(
         mutableStateOf(size)
     }
 
-    Text("Size", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+    Text("Kích cỡ", style = MaterialTheme.typography.titleSmall, color = Color.Black)
 
     Spacer(modifier = Modifier.height(4.dp))
 
@@ -269,7 +269,7 @@ fun ProductVariationSelectSection(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    Text("Select color", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+    Text("Màu sắc", style = MaterialTheme.typography.titleSmall, color = Color.Black)
 
     Spacer(modifier = Modifier.height(4.dp))
 

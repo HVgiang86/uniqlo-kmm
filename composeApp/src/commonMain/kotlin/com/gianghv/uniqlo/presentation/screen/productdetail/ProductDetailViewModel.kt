@@ -5,6 +5,7 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.CartRepository
+import com.gianghv.uniqlo.data.FakeData
 import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
@@ -51,7 +52,9 @@ class ProductDetailViewModel(
             productRepository.getProductDetail(productId).combine(userRepository.getWishlist(WholeApp.USER_ID)) { product, wishlist ->
                 product.copy(isFavorite = wishlist.contains(product.id))
             }.collect {
-                reducer.sendEvent(ProductDetailUiEvent.LoadProductSuccess(it))
+                reducer.sendEvent(
+                    ProductDetailUiEvent.LoadProductSuccess(it.copy(evaluations = FakeData.evaluations))
+                )
             }
         }
     }

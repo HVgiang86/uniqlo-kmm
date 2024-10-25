@@ -14,10 +14,8 @@ fun AuthScreen(viewModel: AuthViewModel, onNavigateMain: () -> Unit) {
     val state by viewModel.state.asState()
 
     when(state.currentScreen) {
-        AuthCurrentScreen.LOGIN -> {LoginNavigation(LoginDestination.Login)
-            AppLogger.d("change current screen to login")}
-        AuthCurrentScreen.SIGNUP -> {LoginNavigation(LoginDestination.SignUp)
-            AppLogger.d("change current screen to login")}
+        AuthCurrentScreen.LOGIN -> {LoginNavigation(LoginDestination.Login)}
+        AuthCurrentScreen.SIGNUP -> {LoginNavigation(LoginDestination.SignUp)}
         AuthCurrentScreen.MAIN -> {
             onNavigateMain()
         }

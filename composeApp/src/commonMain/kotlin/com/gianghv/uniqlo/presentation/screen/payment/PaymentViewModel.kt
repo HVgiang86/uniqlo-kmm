@@ -41,6 +41,11 @@ class PaymentViewModel(private val cartRepository: CartRepository) : BaseViewMod
         if (url.isPaymentSuccess()) {
             reducer.sendEvent(PaymentUiEvent.PayingSuccess(url, 1))
         } else {
+            if (url.contains("http://localhost:3003")) {
+                reducer.sendEvent(PaymentUiEvent.PayingFail(NullPointerException("Payment fail")))
+                return
+            }
+
             if (url.isPaymentFail()) {
                 AppLogger.d("Payment fail, url: $url")
                 uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {

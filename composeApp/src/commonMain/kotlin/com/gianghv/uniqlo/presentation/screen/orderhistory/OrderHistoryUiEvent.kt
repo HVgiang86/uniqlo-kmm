@@ -7,4 +7,8 @@ sealed class OrderHistoryUiEvent : Reducer.UiEvent {
     data class Error(val error: Throwable) : OrderHistoryUiEvent()
     data object LoadOrderHistory : OrderHistoryUiEvent()
     data class LoadOrderHistorySuccess(val orderList: List<OrderHistory>) : OrderHistoryUiEvent()
+    data object LoadCartCount : OrderHistoryUiEvent()
+    data class LoadCartCountSuccess(val count: Int) : OrderHistoryUiEvent()
+    data class CancelOrder(val orderId: Long) : OrderHistoryUiEvent()
+    data class CancelOrderSuccess(val orderId: Long) : OrderHistoryUiEvent()
 }

@@ -49,7 +49,9 @@ import androidx.compose.ui.unit.sp
 import com.gianghv.uniqlo.domain.OrderDetail
 import com.gianghv.uniqlo.domain.OrderHistory
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
+import com.gianghv.uniqlo.presentation.component.BlackFilledTextButton
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
+import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.order.PaymentMethod
@@ -68,6 +70,7 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(OrderHistoryUiEvent.LoadOrderHistory)
+        viewModel.sendEvent(OrderHistoryUiEvent.LoadCartCount)
     }
 
     if (state.isLoading) {
@@ -78,11 +81,13 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
         AppErrorDialog(state.error?.throwable, onDismissRequest = { })
     }
 
+    var showPopupConfirmCancel by remember { mutableStateOf<Long?>(null) }
+
     Scaffold(topBar = {
         TopAppBar(title = {
-            Text(text = "Order History", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(text = "Lịch sử đặt hàng", style = MaterialTheme.typography.titleMedium, color = Color.Black)
         }, actions = {
-            val cartCount = 0
+            val cartCount = state.cartCount
             Box(modifier = Modifier.wrapContentSize()) {
                 IconButton(onClick = {
                     navigateTo(MainScreenDestination.Cart)
@@ -103,11 +108,11 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
                 }
             }
 
-            IconButton(onClick = {
-
-            }) {
-                Icon(imageVector = Icons.Default.Menu, contentDescription = null)
-            }
+//            IconButton(onClick = {
+//
+//            }) {
+//                Icon(imageVector = Icons.Default.Menu, contentDescription = null)
+//            }
         })
     }) { innerPadding ->
         val orders = state.orderList
@@ -124,9 +129,11 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
                     OrderHistoryItem(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 8.dp, horizontal = 8.dp),
                         order = order,
                         onClick = {},
+                        onCancelClick = {
+                            showPopupConfirmCancel = it.id
+                        },
                         boxWidth = boxWidth,
                         onPayNowClick = { orderHistory ->
-                            AppLogger.d("[hehe]Pay now clicked $orderHistory")
                             navigateTo(
                                 MainScreenDestination.Payment(
                                     mapOf(
@@ -139,13 +146,38 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
                 }
             }
         }
+
+        if (showPopupConfirmCancel != null) {
+            val orderId = showPopupConfirmCancel
+            MyAlertDialog(
+                title = "Huỷ đơn hàng",
+                content = "Bạn có chắc chắn muốn huỷ đơn hàng này không?",
+                onCanceled = {
+                    showPopupConfirmCancel = null
+                },
+                leftBtn = {
+                    viewModel.sendEvent(OrderHistoryUiEvent.CancelOrder(orderId ?: 0))
+                    showPopupConfirmCancel = null
+                },
+                leftBtnTitle = "OK",
+                rightBtn = {
+                    showPopupConfirmCancel = null
+                },
+                rightBtnTitle = "Huỷ"
+            )
+        }
     }
 }
 
 
 @Composable
 fun OrderHistoryItem(
-    modifier: Modifier = Modifier, order: OrderHistory, onClick: (OrderHistory) -> Unit, boxWidth: Dp, onPayNowClick: (OrderHistory) -> Unit = {}
+    modifier: Modifier = Modifier,
+    order: OrderHistory,
+    onClick: (OrderHistory) -> Unit,
+    boxWidth: Dp,
+    onPayNowClick: (OrderHistory) -> Unit = {},
+    onCancelClick: (OrderHistory) -> Unit = {}
 ) {
     Card(
         modifier = modifier.wrapContentHeight().fillMaxWidth(),
@@ -155,7 +187,10 @@ fun OrderHistoryItem(
     ) {
         Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(16.dp)) {
             Text(text = "#${order.name}", style = MaterialTheme.typography.titleMedium, color = Color.Black)
-            Text(text = order.status ?: "", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+
+            val orderStatus = (order.status ?: "").toOrderStatus()
+
+            Text(text = orderStatus.toText(), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             HorizontalDivider(modifier = Modifier.height(4.dp).padding(top = 8.dp, bottom = 16.dp), thickness = 1.dp, color = Color.LightGray)
 
             val detailSize = order.details?.size ?: 0
@@ -167,13 +202,15 @@ fun OrderHistoryItem(
             }
 
             if (detailSize > 2) {
-                Text(text = "and ${detailSize - 2} more items", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+                Text(text = "và ${detailSize - 2} sản phẩm khác...", style = MaterialTheme.typography.titleSmall, color = Color.Black)
             }
 
             HorizontalDivider(modifier = Modifier.height(4.dp).padding(top = 8.dp, bottom = 16.dp), thickness = 1.dp, color = Color.LightGray)
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(4.dp)) {
-                Text(text = "Total: ", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+                Text(text = "Tổng: ", style = MaterialTheme.typography.titleSmall, color = Color.Black)
                 val total = (order.total?.toDouble() ?: 0.0).toCurrencyText()
                 Text(text = total, style = MaterialTheme.typography.titleSmall, color = Color.Red)
             }
@@ -196,6 +233,14 @@ fun OrderHistoryItem(
                     PayNowButton(onClick = { onPayNowClick(order) }, boxWidth = boxWidth, modifier = Modifier.align(Alignment.CenterEnd))
                 }
             }
+
+            if ((order.status == "pending" && order.pay == true) || (order.status in listOf("pending", "accept") && order.pay == false)) {
+                Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(4.dp)) {
+                    CancelOrderButton(onClick = {
+                        onCancelClick(order)
+                    }, boxWidth = boxWidth, modifier = Modifier.align(Alignment.CenterEnd).padding(start = 2.dp))
+                }
+            }
         }
     }
 }
@@ -207,6 +252,17 @@ fun PayNowButton(modifier: Modifier = Modifier, onClick: () -> Unit, boxWidth: D
         modifier = modifier.width(boxWidth * 0.4f).wrapContentHeight().padding(8.dp),
         text = {
             Text(text = "Pay Now", style = MaterialTheme.typography.titleSmall, color = Color.White)
+        },
+    )
+}
+
+@Composable
+fun CancelOrderButton(modifier: Modifier = Modifier, onClick: () -> Unit, boxWidth: Dp) {
+    BlackFilledTextButton(
+        onClick = onClick,
+        modifier = modifier.width(boxWidth * 0.4f).wrapContentHeight().padding(8.dp),
+        text = {
+            Text(text = "Cancel", style = MaterialTheme.typography.titleSmall, color = Color.White)
         },
     )
 }
@@ -252,3 +308,4 @@ fun OrderDetailComponent(modifier: Modifier = Modifier, orderDetail: OrderDetail
         }
     }
 }
+

@@ -31,9 +31,9 @@ fun ExpandableText(
     fontStyle: FontStyle? = null,
     text: String,
     collapsedMaxLine: Int = DEFAULT_MINIMUM_TEXT_LINE,
-    showMoreText: String = "... Show More",
+    showMoreText: String = "... Xem thêm",
     showMoreStyle: SpanStyle = SpanStyle(fontWeight = FontWeight.W500),
-    showLessText: String = " Show Less",
+    showLessText: String = " Ẩn bất",
     showLessStyle: SpanStyle = showMoreStyle,
     textAlign: TextAlign? = null,
     fontSize: TextUnit

@@ -19,7 +19,7 @@ import com.gianghv.uniqlo.util.logging.AppLogger
 fun MyAlertDialog(
     title: String,
     content: String,
-    leftBtnTitle: String = "Dismiss",
+    leftBtnTitle: String = "Huỷ",
     rightBtnTitle: String = "Ok",
     leftBtn: (() -> Unit)? = null,
     rightBtn: (() -> Unit)? = null,
@@ -27,7 +27,6 @@ fun MyAlertDialog(
     cancelable: Boolean = true,
     onCanceled: (() -> Unit) = {}
 ) {
-    AppLogger.d("MyAlertDialog: $title, $content, $leftBtnTitle, $rightBtnTitle, $leftBtn, $rightBtn, $state, $cancelable")
     val openDialog = state ?: remember { mutableStateOf(true) }
 
     if (openDialog.value) {

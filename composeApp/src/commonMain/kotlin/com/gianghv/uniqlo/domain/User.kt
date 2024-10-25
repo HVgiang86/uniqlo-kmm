@@ -12,8 +12,8 @@ data class User(
     val gender: String = "other",
     val role: String = "user",
     val active: Boolean = true,
-    val passwordReset: String?,
-    val birthday: String?,
+    val passwordReset: String? = null,
+    val birthday: String? = "",
     val wishList: List<Long>? = emptyList(),
 ): BaseModel()
 

@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -94,17 +92,11 @@ fun ChatBubble(modifier: Modifier = Modifier, message: AnnotatedString? = null, 
     Box(modifier = modifier.wrapContentWidth().wrapContentHeight().clip(RoundedCornerShape(16.dp)).background(Color.LightGray, RoundedCornerShape(16.dp))) {
         if (message != null) {
             Text(
-                text = message,
-                color = Color.Black,
-                textAlign = TextAlign.Justify,
-                modifier = Modifier.padding(8.dp)
+                text = message, color = Color.Black, textAlign = TextAlign.Justify, modifier = Modifier.padding(8.dp)
             )
         } else {
             Text(
-                text = messageString ?: "",
-                color = Color.Black,
-                textAlign = TextAlign.Justify,
-                modifier = Modifier.padding(8.dp)
+                text = messageString ?: "", color = Color.Black, textAlign = TextAlign.Justify, modifier = Modifier.padding(8.dp)
             )
         }
     }

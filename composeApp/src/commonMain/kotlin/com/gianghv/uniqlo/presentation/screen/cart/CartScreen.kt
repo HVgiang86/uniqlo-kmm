@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -74,7 +73,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
 
     Scaffold(topBar = {
         TopAppBar(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), title = {
-            Text(text = "Cart", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(text = "Giỏ hàng", style = MaterialTheme.typography.titleMedium, color = Color.Black)
         }, actions = {
             IconButton(onClick = {
 
@@ -92,7 +91,12 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
 
         if (cartItems.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
-                Text(text = "No items in cart", style = MaterialTheme.typography.titleMedium, color = Color.Black, modifier = Modifier.align(Alignment.Center))
+                Text(
+                    text = "Không có sản phẩm nào trong giỏ hàng",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
 
@@ -106,7 +110,11 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
                         if (it) viewModel.sendEvent(CartUiEvent.SelectAll) else viewModel.sendEvent(CartUiEvent.UnSelectAll)
                     }, modifier = Modifier.align(Alignment.CenterVertically))
 
-                    Text(text = "${state.selectedItems.size} items selected", color = Color.Black, modifier = Modifier.align(Alignment.CenterVertically))
+                    Text(
+                        text = "${state.selectedItems.size} sản phẩm được chọn",
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
                 }
 
                 HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
@@ -140,7 +148,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
                 Row(modifier = Modifier.padding(vertical = 16.dp, horizontal = 32.dp)) {
                     Column(modifier = Modifier.weight(1.5f)) {
 
-                        Text("Price", style = MaterialTheme.typography.bodySmall, color = Black)
+                        Text("Giá", style = MaterialTheme.typography.bodySmall, color = Black)
 
                         val totalPrice = state.selectedItems.fold(0.0) { acc, cartItem ->
                             val discountPercentage = (cartItem.variation?.product?.discountPercentage ?: 0) % 101
@@ -149,7 +157,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
 
                             acc + finalPrice
                         }
-                        val priceText = (totalPrice*1000.0).toCurrencyText()
+                        val priceText = (totalPrice * 1000.0).toCurrencyText()
                         Text(
                             priceText,
                             style = MaterialTheme.typography.titleSmall,
@@ -163,7 +171,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit, navigateTo: (MainSc
                     RedFilledTextButton(onClick = {
                         confirmOrderDialog.value = state.selectedItems
                     }, modifier = Modifier.weight(1f), text = {
-                        Text("Checkout", style = MaterialTheme.typography.titleSmall, color = Color.White)
+                        Text("Đặt hàng", style = MaterialTheme.typography.titleSmall, color = Color.White)
                     })
                 }
             }

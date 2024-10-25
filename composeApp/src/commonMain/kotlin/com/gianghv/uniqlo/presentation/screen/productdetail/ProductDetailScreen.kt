@@ -73,6 +73,8 @@ import com.gianghv.uniqlo.presentation.screen.home.RecommendProductList
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.AddCartBottomSheet
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.BrandBar
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.EvaluationCard
+import com.gianghv.uniqlo.presentation.screen.productdetail.components.EvaluationViewBottomSheet
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariantPickerBottomSheet
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationColorButton
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSizeButton
@@ -80,7 +82,6 @@ import com.gianghv.uniqlo.util.ValidateHelper
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.round
 import com.gianghv.uniqlo.util.ext.toCurrencyText
-import com.gianghv.uniqlo.util.getScreenHeightInDp
 import com.gianghv.uniqlo.util.logging.AppLogger
 import com.github.panpf.sketch.AsyncImage
 import com.github.panpf.sketch.rememberAsyncImageState
@@ -133,16 +134,22 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                 }
             })
         }) {
-            Box(modifier = Modifier.fillMaxSize().padding(bottom = it.calculateBottomPadding())) {
-                val screenHeight = getScreenHeightInDp().dp
-
+            var boxWidth by remember { mutableStateOf(0.dp) }
+            var boxHeight by remember { mutableStateOf(0.dp) }
+            val density = LocalDensity.current
+            Box(modifier = Modifier.fillMaxSize().padding(bottom = it.calculateBottomPadding()).onGloballyPositioned { layoutCoordinates ->
+                val widthInPx = layoutCoordinates.size.width
+                boxWidth = with(density) { widthInPx.toDp() }
+                val heightInPx = layoutCoordinates.size.height
+                boxHeight = with(density) { heightInPx.toDp() }
+            }) {
                 val scrollState = rememberScrollState()
                 val productImages = product.images.let { it?.toMutableList() }.also { it?.add(0, Image(-1, product.defaultImage ?: "")) }?.distinctBy {
                     it.imagePath
                 }
                 Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
                     ProductImagePanel(
-                        modifier = Modifier.fillMaxWidth().height(screenHeight * 0.6f), images = productImages
+                        modifier = Modifier.fillMaxWidth().height(boxHeight * 0.6f), images = productImages
                     )
                     ProductInfoPanel(modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                         product = product,
@@ -157,7 +164,7 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
                         })
                 }
 
-                AddToCartPanel(modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter),
+                AddToCartPanel(modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth().fillMaxHeight(0.1f).align(Alignment.BottomCenter),
                     enableAddToCart = true,
                     enableOrderNow = true,
                     onAddToCart = {
@@ -225,8 +232,7 @@ fun ProductImagePanel(modifier: Modifier = Modifier, images: List<Image>? = empt
         val coroutineScope = rememberCoroutineScope()
 
         if ((filteredImages?.size ?: 0) > 1) {
-            ProductImagePagerIndicator(
-                modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
+            ProductImagePagerIndicator(modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
                 pagerState = pagerState,
                 onClickIndicator = { index ->
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
@@ -291,13 +297,20 @@ fun ProductInfoPanel(
         initialDetent = Hidden, detents = listOf(Hidden, FullyExpanded)
     )
 
+    val reviewBottomSheetState = rememberModalBottomSheetState(
+        initialDetent = Hidden, detents = listOf(Hidden, FullyExpanded)
+    )
+
     val scope = rememberCoroutineScope()
     var boxWidth by remember { mutableStateOf(0.dp) }
+    var boxHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
 
     Column(modifier = modifier.padding(16.dp).fillMaxWidth().wrapContentHeight().onGloballyPositioned { layoutCoordinates ->
         val widthInPx = layoutCoordinates.size.width
         boxWidth = with(density) { widthInPx.toDp() }
+        val heightInPx = layoutCoordinates.size.height
+        boxHeight = with(density) { heightInPx.toDp() }
     }) {
 
         Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
@@ -340,7 +353,13 @@ fun ProductInfoPanel(
 
         ProductPrice(product = product)
 
-        ProductRating(product = product)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ProductRating(product = product, onSeeMoreClick = {
+            scope.launch {
+                reviewBottomSheetState.animateTo(FullyExpanded)
+            }
+        })
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -351,9 +370,9 @@ fun ProductInfoPanel(
         }) {
             Column {
                 Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                    Text("Variants", style = MaterialTheme.typography.titleSmall, color = Color.Black, modifier = Modifier.align(Alignment.CenterStart))
+                    Text("Màu sắc, kích thuớc", style = MaterialTheme.typography.titleSmall, color = Color.Black, modifier = Modifier.align(Alignment.CenterStart))
                     Text(
-                        "Click to pick variants",
+                        "Bấm chọn",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray,
                         modifier = Modifier.align(Alignment.CenterEnd)
@@ -375,6 +394,8 @@ fun ProductInfoPanel(
             viewModel.sendEvent(ProductDetailUiEvent.SelectVariation(size = it))
         })
 
+        EvaluationViewBottomSheet(state = reviewBottomSheetState, product = product, screenHeight = boxHeight)
+
         Spacer(modifier = Modifier.height(16.dp))
 
         val brand = product.brand
@@ -389,7 +410,7 @@ fun ProductInfoPanel(
 
         val description = product.description
         if (!description.isNullOrEmpty()) {
-            Text("Description", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+            Text("Mô tả", style = MaterialTheme.typography.titleSmall, color = Color.Black)
 
             ExpandableText(
                 style = MaterialTheme.typography.bodySmall,
@@ -400,10 +421,25 @@ fun ProductInfoPanel(
             )
         }
 
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp))
+
+        val specification = product.specifications
+        if (!description.isNullOrEmpty()) {
+            Text("Thông số", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+
+            ExpandableText(
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 13.sp,
+                text = specification ?: "",
+                modifier = Modifier.padding(end = 48.dp).fillMaxWidth().wrapContentHeight(),
+                textAlign = TextAlign.Justify
+            )
+        }
+
         val recommendedProducts = state.recommendedProducts
         if (recommendedProducts.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text("May you like!", style = MaterialTheme.typography.titleSmall, color = Color.Black)
+            Text("Sản phẩm tương tự!", style = MaterialTheme.typography.titleSmall, color = Color.Black)
             RecommendProductList(boxWidth = boxWidth, modifier = Modifier.fillMaxWidth(), productList = recommendedProducts, onClick = {
                 onProductClick(it)
             }, onFavoriteClick = { selectedProduct, isFavorite ->
@@ -420,7 +456,7 @@ fun ProductInfoPanel(
 fun AddToCartPanel(modifier: Modifier, enableAddToCart: Boolean = false, enableOrderNow: Boolean = false, onAddToCart: () -> Unit, onOrderNow: () -> Unit) {
     Row(modifier = modifier.background(color = Color.Transparent)) {
         AddToCartButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = enableAddToCart, onClick = onAddToCart)
-        OrderNowButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = enableOrderNow, onClick = onOrderNow)
+//        OrderNowButton(modifier = Modifier.weight(1f).padding(vertical = 8.dp, horizontal = 16.dp), enable = enableOrderNow, onClick = onOrderNow)
     }
 }
 
@@ -430,7 +466,7 @@ fun AddToCartButton(modifier: Modifier = Modifier, enable: Boolean = false, onCl
         BaseOutlinedButton(
             onClick = onClick,
             text = {
-                Text(text = "Add to Cart", color = MaterialTheme.colorScheme.primary)
+                Text(text = "Thêm vào giỏ hàng", color = MaterialTheme.colorScheme.primary)
             },
             modifier = modifier.height(52.dp),
             enable = true,
@@ -494,7 +530,7 @@ fun ProductPrice(modifier: Modifier = Modifier, product: Product) {
 }
 
 @Composable
-fun ProductRating(modifier: Modifier = Modifier, product: Product) {
+fun ProductRating(modifier: Modifier = Modifier, product: Product, onSeeMoreClick: () -> Unit = {}) {
     val starts = (product.averageRating ?: 0.0).round(2)
 
     var ratingRowModifier = Modifier.fillMaxWidth().wrapContentHeight()
@@ -503,33 +539,49 @@ fun ProductRating(modifier: Modifier = Modifier, product: Product) {
         ratingRowModifier = ratingRowModifier.alpha(0f)
     }
 
-    Row(modifier = ratingRowModifier) {
-        Icon(
-            imageVector = Icons.Default.Star, contentDescription = null, modifier = Modifier.size(24.dp).align(Alignment.CenterVertically), tint = Color.Yellow
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            text = "${product.averageRating}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Black
-        )
+    Column {
+        Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().clickable {
+            onSeeMoreClick()
+        }) {
+            Row(modifier = ratingRowModifier) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = "${product.averageRating}",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.width(4.dp))
 
-        Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp).align(Alignment.CenterVertically),
+                    tint = Color.Yellow
+                )
+                Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = "(${product.numberRating ?: 0} Reviews)",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            modifier = Modifier.align(Alignment.CenterVertically),
-            maxLines = 1,
-            minLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+                Text(
+                    text = "(${product.numberRating ?: 0} đánh giá)",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    maxLines = 1,
+                    minLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Text("Xem thêm", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, modifier = Modifier.align(Alignment.CenterEnd).clickable {
+                onSeeMoreClick()
+            })
+        }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), color = Color.Gray, thickness = 1.dp)
+
+        repeat(2) {
+            if (it < (product.evaluations?.size ?: 0)) {
+                val evaluation = product.evaluations?.get(it)
+                evaluation?.let { it1 -> EvaluationCard(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp), evaluation = it1) }
+            }
+        }
     }
 }
-
-
-
-
-

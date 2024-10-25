@@ -1,5 +1,8 @@
 [versions]
 
+composeWebviewMultiplatform = "1.9.20"
+compottie = "2.0.0-rc01"
+core = "1.15.0"
 kotlin = "2.0.20"
 compose = "1.7.0-alpha03"
 agp = "8.5.2"
@@ -8,6 +11,7 @@ androidx-uiTest = "1.6.8"
 ktlintVersion = "0.0.26"
 sketchCompose = "4.0.0-alpha08"
 sketchComposeResources = "4.0.0-alpha08"
+sonner = "0.3.8"
 voyager = "1.1.0-beta02"
 coil = "3.0.0-alpha10"
 napier = "2.7.1"
@@ -38,9 +42,17 @@ ktor = ["ktor-client-core", "ktor-client-cio", "ktor-client-logging", "ktor-clie
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-uitest-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }
 androidx-uitest-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-uiTest" }
+compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
+compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
+compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
+core = { module = "com.composables:core", version.ref = "core" }
+font-awesome = { module = "br.com.devsrsouza.compose.icons:font-awesome", version.ref = "composeIcons" }
 rules-ktlint = { module = "com.twitter.compose.rules:ktlint", version.ref = "ktlintVersion" }
 sketch-compose-resources = { module = "io.github.panpf.sketch4:sketch-compose-resources", version.ref = "sketchComposeResources" }
 sketch-compose = { module = "io.github.panpf.sketch4:sketch-compose", version.ref = "sketchCompose" }
+sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 #Navigation Library
 voyager-screenmodel = { group = "cafe.adriel.voyager", name = "voyager-screenmodel", version.ref = "voyager" }

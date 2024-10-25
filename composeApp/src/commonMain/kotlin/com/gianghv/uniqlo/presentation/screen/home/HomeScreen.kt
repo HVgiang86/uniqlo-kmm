@@ -48,6 +48,7 @@ import com.gianghv.uniqlo.presentation.screen.home.list.ProductItem
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.searchresult.SearchResultScreenType
 import com.gianghv.uniqlo.util.asState
+import com.gianghv.uniqlo.util.logging.AppLogger
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +59,7 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
     val toasterState = rememberToasterState()
     var isRefreshing by remember { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
+    var isFirstSearchClicked by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(HomeUiEvent.LoadAllProduct)
@@ -73,6 +75,11 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
         AppErrorDialog(state.error?.throwable, onDismissRequest = { })
     }
 
+    if (state.productList.isNotEmpty() && isFirstSearchClicked) {
+        searchSuggestion.clear()
+        searchSuggestion.addAll(state.productList.take(10))
+    }
+
     Scaffold(topBar = {
         HomeToolBar(cartCount = state.cartCount, onSearch = {
             navigateToSearchResult(navigateTo, it)
@@ -81,9 +88,12 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
         }, onCartClick = {
             navigateTo(MainScreenDestination.Cart)
         }, onSearchChange = {
+            AppLogger.d("onSearchChange: $it")
             searchSuggestion.clear()
             searchSuggestion.addAll(state.productList.filter { text -> text.name?.contains(it, ignoreCase = true) == true })
-        }, searchSuggestion = searchSuggestion.toList())
+        }, searchSuggestion = searchSuggestion.toList(), onSearchTap = {
+            isFirstSearchClicked = false
+        })
     }) { it ->
         val allProducts = state.productList.take(12)
 
@@ -107,7 +117,7 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
 
                 if (recommendProducts.isNotEmpty()) {
                     header {
-                        HeaderRow("For you!", onShowMoreClicked = {
+                        HeaderRow("Gợi ý cho bạn!", onShowMoreClicked = {
                             navigateToSeeMoreRecommendProducts(navigateTo)
                         })
                     }
@@ -123,7 +133,7 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
 
                 if (allProducts.isNotEmpty()) {
                     header {
-                        HeaderRow("Popular Products", onShowMoreClicked = {
+                        HeaderRow("Sản phẩm nổi bật", onShowMoreClicked = {
                             navigateToSeeMorePopularProducts(navigateTo)
                         })
                     }
@@ -141,7 +151,7 @@ fun HomeScreen(viewModel: HomeViewModel, navigateTo: (MainScreenDestination) -> 
                     header {
                         Box(modifier = Modifier.fillMaxSize()) {
                             Text(
-                                "No products found!",
+                                "Không tìm thấy sản phẩm nào!",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color.Black,
                                 modifier = Modifier.align(Alignment.Center)
@@ -224,7 +234,7 @@ fun AllProductList(
 @Composable
 fun EmptyScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
-        Text("Empty", modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleLarge)
+        Text("Trống!", modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleLarge)
     }
 }
 
@@ -234,6 +244,6 @@ fun HeaderRow(title: String, onShowMoreClicked: () -> Unit = {}) {
         Text(modifier = Modifier.align(Alignment.CenterStart), text = title, style = MaterialTheme.typography.titleMedium, color = Color.Black)
         Text(modifier = Modifier.align(Alignment.CenterEnd).clickable {
             onShowMoreClicked()
-        }, text = "See More", style = MaterialTheme.typography.titleSmall, color = Color.Gray)
+        }, text = "Xem thêm", style = MaterialTheme.typography.titleSmall, color = Color.Gray)
     }
 }

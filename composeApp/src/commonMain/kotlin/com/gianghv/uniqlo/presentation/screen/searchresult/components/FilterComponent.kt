@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -161,3 +162,90 @@ fun FilterPrice(isDesc: Boolean? = false, isDescSelected: () -> Unit, isAscSelec
         }
     }
 }
+
+@Composable
+fun FilterCategory(selectedCategory: String?, categoryList: List<String> = emptyList(), onCategorySelected: (String?) -> Unit) {
+    val state = rememberMenuState(expanded = false)
+
+    Menu(state = state) {
+        MenuButton(
+            Modifier.clip(RoundedCornerShape(6.dp)).border(0.5.dp, Color(0xFFBDBDBD), RoundedCornerShape(6.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BasicText("Category ${selectedCategory ?: ""}", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.width(4.dp))
+                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+        }
+
+        MenuContent(
+            modifier = Modifier.width(80.dp).border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(4.dp)).background(Color.White).padding(4.dp),
+        ) {
+            MenuItem(modifier = Modifier.clip(RoundedCornerShape(4.dp)), onClick = {
+                state.expanded = false
+                onCategorySelected(null)
+            }) {
+                BasicText("All", modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp))
+            }
+
+            categoryList.forEachIndexed { _, option ->
+                MenuItem(modifier = Modifier.clip(RoundedCornerShape(4.dp)), onClick = {
+                    state.expanded = false
+                    onCategorySelected(option)
+                }) {
+                    if (selectedCategory.equals(option, ignoreCase = true)) BasicText(
+                        option, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp).background(MaterialTheme.colorScheme.primary)
+                    )
+                    else BasicText(option, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterBrand(selectedBrand: String?, brandList: List<String> = emptyList(), onBrandSelected: (String?) -> Unit) {
+    val state = rememberMenuState(expanded = false)
+
+    Menu(state = state) {
+        MenuButton(
+            Modifier.clip(RoundedCornerShape(6.dp)).border(0.5.dp, Color(0xFFBDBDBD), RoundedCornerShape(6.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BasicText("Brand ${selectedBrand ?: ""}", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.width(4.dp))
+                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+        }
+
+        MenuContent(
+            modifier = Modifier.width(80.dp).heightIn(200.dp).border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(4.dp)).background(Color.White).padding(4.dp),
+        ) {
+            MenuItem(modifier = Modifier.clip(RoundedCornerShape(4.dp)), onClick = {
+                state.expanded = false
+                onBrandSelected(null)
+            }) {
+                BasicText("All", modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp))
+            }
+
+            brandList.forEachIndexed { _, option ->
+                MenuItem(modifier = Modifier.clip(RoundedCornerShape(4.dp)), onClick = {
+                    state.expanded = false
+                    onBrandSelected(option)
+                }) {
+                    if (selectedBrand.equals(option, ignoreCase = true)) BasicText(
+                        option, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp).background(MaterialTheme.colorScheme.primary)
+                    )
+                    else BasicText(option, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp))
+                }
+            }
+        }
+    }
+}
+

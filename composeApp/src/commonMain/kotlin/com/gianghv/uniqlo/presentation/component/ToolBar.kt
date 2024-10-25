@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
@@ -60,7 +62,8 @@ fun HomeToolBar(
     cartCount: Int = 0,
     onMenuClick: () -> Unit,
     onCartClick: () -> Unit,
-    searchSuggestion: List<Product> = emptyList()
+    searchSuggestion: List<Product> = emptyList(),
+    onSearchTap: () -> Unit = {}
 ) {
     var text by rememberSaveable { mutableStateOf("") }
     var searchRequired by remember {
@@ -83,6 +86,7 @@ fun HomeToolBar(
             MyAppBar(cartCount = cartCount, text = text, onSearch = {}, onValueChange = { changed ->
                 text = changed
             }, onSearchTap = {
+                onSearchTap()
                 searchRequired = true
             }, onMenuClick = onMenuClick, onCartClick = onCartClick)
         }
@@ -138,7 +142,7 @@ fun WishListToolBar(
     onCartClick: () -> Unit = {},
 ) {
     TopAppBar(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), title = {
-        Text(text = "Wishlist", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+        Text(text = "Yêu thích", style = MaterialTheme.typography.titleMedium, color = Color.Black)
     }, actions = {
         Box(modifier = Modifier.wrapContentSize()) {
             IconButton(onClick = onCartClick) {
@@ -224,11 +228,21 @@ fun SearchAppBarTitle(
     text: String, onSearchTap: (String) -> Unit, onValueChange: (String) -> Unit, onCancelTap: () -> Unit = {}, searchSuggestion: List<Product> = emptyList()
 ) {
     val focusManager = LocalFocusManager.current
+
+    var boxHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
     Box(Modifier.fillMaxWidth().wrapContentHeight().padding(top = 32.dp).semantics { isTraversalGroup = true }.pointerInput(Unit) {
         detectTapGestures(onTap = {
             focusManager.clearFocus()
         })
+    }.onGloballyPositioned { layoutCoordinates ->
+        val heightInPx = layoutCoordinates.size.height
+        boxHeight = with(density) { heightInPx.toDp() }
     }) {
+
+        val shouldExpand = searchSuggestion.isNotEmpty()
+
         DockedSearchBar(modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp).semantics { traversalIndex = 0f },
             inputField = {
                 AppOutlinedTextField(modifier = Modifier.height(52.dp).wrapContentHeight().fillMaxWidth(),
@@ -259,22 +273,24 @@ fun SearchAppBarTitle(
                     textStyle = MaterialTheme.typography.bodySmall
                 )
             },
-            expanded = true,
+            expanded = shouldExpand,
             onExpandedChange = { },
             colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             shape = RoundedCornerShape(8.dp)
         ) {
             //this to show Search suggestions
-            Column(Modifier.wrapContentHeight().verticalScroll(rememberScrollState())) {
-                repeat(searchSuggestion.size) { index ->
-                    val product = searchSuggestion[index]
-                    ListItem(headlineContent = { Text(product.name.toString()) },
-                        supportingContent = { Text(product.category?.name.toString()) },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.clickable {
-                            onSearchTap(product.name.toString())
-                        }.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
+            if (searchSuggestion.isNotEmpty()) {
+                Column(Modifier.wrapContentHeight().verticalScroll(rememberScrollState())) {
+                    repeat(searchSuggestion.size) { index ->
+                        val product = searchSuggestion[index]
+                        ListItem(headlineContent = { Text(product.name.toString()) },
+                            supportingContent = { Text(product.category?.name.toString()) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier = Modifier.clickable {
+                                onSearchTap(product.name.toString())
+                            }.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
         }

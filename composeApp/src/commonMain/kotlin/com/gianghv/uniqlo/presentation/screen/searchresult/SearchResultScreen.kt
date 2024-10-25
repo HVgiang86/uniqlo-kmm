@@ -35,6 +35,8 @@ import com.gianghv.uniqlo.presentation.component.SearchToolBar
 import com.gianghv.uniqlo.presentation.screen.home.AllProductList
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.productdetail.components.VariationSize
+import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterBrand
+import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterCategory
 import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterColor
 import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterPrice
 import com.gianghv.uniqlo.presentation.screen.searchresult.components.FilterSize
@@ -123,6 +125,25 @@ fun SearchResultScreen(
                 }, isDescSelected = {
                     val priceFilter = FilterType.FilterPrice(true)
                     viewModel.sendEvent(SearchResultUiEvent.ApplyFilter(state.filterState.copy(priceFilter = priceFilter)))
+                })
+
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterCategory(
+                    state.filterState.categoryFilter?.category,
+                    categoryList = state.filterState.allCategoryList,
+                    onCategorySelected = { categorySelected ->
+                        val categoryFilter = if (categorySelected != null) FilterType.FilterCategory(categorySelected) else null
+                        viewModel.sendEvent(
+                            SearchResultUiEvent.ApplyFilter(state.filterState.copy(categoryFilter = categoryFilter))
+                        )
+                    })
+
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterBrand(state.filterState.brandFilter?.brand, brandList = state.filterState.allBrandList, onBrandSelected = { brandSelected ->
+                    val brandFilter = if (brandSelected != null) FilterType.FilterBrand(brandSelected) else null
+                    viewModel.sendEvent(
+                        SearchResultUiEvent.ApplyFilter(state.filterState.copy(brandFilter = brandFilter))
+                    )
                 })
             }
 

@@ -37,6 +37,22 @@ class OrderHistoryViewModel(private val cartRepository: CartRepository) : BaseVi
         }
     }
 
+    fun loadCartCount() {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            cartRepository.getCartItems(WholeApp.USER_ID).collect {
+                reducer.sendEvent(OrderHistoryUiEvent.LoadCartCountSuccess(it.size))
+            }
+        }
+    }
+
+    fun cancelOrder(orderId: Long) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            cartRepository.updateOrderStatus(orderId, "user_deny").collect {
+                sendEvent(OrderHistoryUiEvent.CancelOrderSuccess(orderId))
+            }
+        }
+    }
+
 }
 
 class OrderHistoryReducer(initialVal: OrderHistoryUiState, private val viewModel: OrderHistoryViewModel) :
@@ -54,6 +70,24 @@ class OrderHistoryReducer(initialVal: OrderHistoryUiState, private val viewModel
 
             is OrderHistoryUiEvent.LoadOrderHistorySuccess -> {
                 setState(oldState.copy(isLoading = false, error = null, orderList = event.orderList))
+            }
+
+            OrderHistoryUiEvent.LoadCartCount -> {
+                viewModel.loadCartCount()
+            }
+
+            is OrderHistoryUiEvent.LoadCartCountSuccess -> {
+                setState(oldState.copy(cartCount = event.count))
+            }
+
+            is OrderHistoryUiEvent.CancelOrder -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.cancelOrder(event.orderId)
+            }
+
+            is OrderHistoryUiEvent.CancelOrderSuccess -> {
+                setState(oldState.copy(isLoading = false, error = null))
+                viewModel.getOrderHistory()
             }
         }
     }

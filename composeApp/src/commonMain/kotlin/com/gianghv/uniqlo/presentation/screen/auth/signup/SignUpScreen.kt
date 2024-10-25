@@ -112,16 +112,16 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
 
             Text(
                 modifier = Modifier.padding(bottom = 8.dp),
-                text = "The password must be at least 8 characters long, and consists of letters and numbers, only the -_.@ symbol can be used",
+                text = "Mật khẩu phải dài ít nhất 8 ký tự, bao gồm chữ cái và số, chỉ được sử dụng ký hiệu -_.@",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.LightGray
             )
 
             Spacer(Modifier.height(22.dp))
 
-            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Your name", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Họ tên", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
-            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "Enter your name", onMessageSent = {
+            AppOutlinedTextField(modifier = Modifier.fillMaxWidth().height(52.dp), placeholder = "Nhập họ tên", onMessageSent = {
                 name.value = it
             }, shape = RoundedCornerShape(10.dp), imeAction = ImeAction.Done, onValueChange = {
                 name.value = it
@@ -131,7 +131,7 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
 
             Spacer(Modifier.height(22.dp))
 
-            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Date of birth", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Ngày sinh", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
             Box(
                 modifier = Modifier.fillMaxWidth().height(52.dp).border(
@@ -153,35 +153,35 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
 
             Text(
                 modifier = Modifier.padding(bottom = 8.dp),
-                text = "Cannot change your date of birth once you have registered",
+                text = "Không thể thay đổi ngày sinh của bạn khi đăng ký",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.LightGray
             )
 
             Spacer(Modifier.height(24.dp))
 
-            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Gender", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Giới tính", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = genderPickedIndex.value == 0, onClick = {
                     genderPickedIndex.value = 0
                 })
-                Text(text = "Male", modifier = Modifier.padding(start = 8.dp))
+                Text(text = "Name", modifier = Modifier.padding(start = 8.dp))
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = genderPickedIndex.value == 1, onClick = {
                     genderPickedIndex.value = 1
                 })
-                Text(text = "Female", modifier = Modifier.padding(start = 8.dp))
+                Text(text = "Nữ", modifier = Modifier.padding(start = 8.dp))
             }
 
             Spacer(Modifier.height(24.dp))
 
-            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Membership Agreement", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+            Text(modifier = Modifier.padding(bottom = 8.dp), text = "Điều khoản người dùng", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
             Text(
                 modifier = Modifier.padding(bottom = 8.dp),
-                text = "By creating an account, you agree to UNIQLO's terms of use and privacy policy",
+                text = "Bằng cách tạo tài khoản, bạn đồng ý với các điều khoản sử dụng và chính sách quyền riêng tư của UNIQLO",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.LightGray
             )
@@ -192,7 +192,7 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
                 })
 
                 Text(
-                    modifier = Modifier.padding(start = 16.dp).fillMaxWidth(), text = "I agree to the UNIQLO TERMS OF USE and PRIVACY POLICY", maxLines = 2
+                    modifier = Modifier.padding(start = 16.dp).fillMaxWidth(), text = "Tôi đồng ý với ĐIỀU KHOẢN SỬ DỤNG và CHÍNH SÁCH QUYỀN RIÊNG TƯ của UNIQLO", maxLines = 2
                 )
             }
 
@@ -201,14 +201,14 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
             Text(modifier = Modifier.padding(bottom = 8.dp).clickable {
                 /* no-op */
                 uriHandler.openUri("https://google.com")
-            }, text = "TERMS OF USE", style = MaterialTheme.typography.bodyLarge, color = Color.Black, textDecoration = TextDecoration.Underline)
+            }, text = "ĐIỀU KHOẢN SỬ DỤNG", style = MaterialTheme.typography.bodyLarge, color = Color.Black, textDecoration = TextDecoration.Underline)
 
             Spacer(Modifier.height(24.dp))
 
             Text(modifier = Modifier.padding(bottom = 8.dp).clickable {
                 /* no-op */
                 uriHandler.openUri("https://google.com")
-            }, text = "PRIVACY POLICY", style = MaterialTheme.typography.bodyLarge, color = Color.Black, textDecoration = TextDecoration.Underline)
+            }, text = "CHÍNH SÁCH BẢO MẬT", style = MaterialTheme.typography.bodyLarge, color = Color.Black, textDecoration = TextDecoration.Underline)
 
             Spacer(Modifier.height(24.dp))
 
@@ -217,7 +217,7 @@ fun SignUpScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.c
                 val gender = if (genderPickedIndex.value == 0) "male" else "female"
                 viewModel.signUp(email.value, password.value, name.value, dob ?: "", gender, privacyAgreed.value)
             }, text = {
-                Text(text = "Continue", color = Color.White)
+                Text(text = "Tiếp tục", color = Color.White)
             })
 
             Spacer(Modifier.height(24.dp))

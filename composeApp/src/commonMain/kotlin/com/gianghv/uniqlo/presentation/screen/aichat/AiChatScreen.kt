@@ -1,10 +1,9 @@
 package com.gianghv.uniqlo.presentation.screen.aichat
 
-import KottieAnimation
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,13 +49,13 @@ import com.gianghv.uniqlo.presentation.component.LoadingDialog
 import com.gianghv.uniqlo.presentation.screen.aichat.components.ChatItem
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.util.asState
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.launch
-import kottieComposition.KottieCompositionSpec
-import kottieComposition.animateKottieCompositionAsState
-import kottieComposition.rememberKottieComposition
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import uniqlo.composeapp.generated.resources.Res
-import utils.KottieConstants
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
@@ -106,33 +105,21 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
                     val widthInPx = layoutCoordinates.size.width
                     boxWidth = with(density) { widthInPx.toDp() }
                 }) {
-                    val listSize = if(state.isServerTyping) (chats.size + 1) else chats.size
+                    val listSize = if (state.isServerTyping) (chats.size + 1) else chats.size
                     items(listSize) { index ->
                         if (index == chats.size) {
-                            var animation by remember { mutableStateOf("") }
-
-                            LaunchedEffect(Unit){
-                                animation = Res.readBytes("files/typinganim.json").decodeToString()
+                            val composition by rememberLottieComposition {
+                                LottieCompositionSpec.JsonString(
+                                    Res.readBytes("files/typinganim.json").decodeToString()
+                                )
                             }
 
-                            val composition = rememberKottieComposition(
-                                spec = KottieCompositionSpec.File(animation)
+                            Image(
+                                painter = rememberLottiePainter(
+                                    composition = composition, iterations = Compottie.IterateForever
+                                ), contentDescription = "Lottie animation", modifier = Modifier.size(80.dp).align(Alignment.CenterStart)
                             )
 
-                            val animationState by animateKottieCompositionAsState(
-                                composition = composition,
-                                restartOnPlay = true,
-                                isPlaying = true,
-                                iterations = KottieConstants.IterateForever
-                            )
-
-                            KottieAnimation(
-                                composition = composition,
-                                progress = {
-                                    animationState.progress
-                                },
-                                modifier = Modifier.size(80.dp).align(Alignment.CenterStart)
-                            )
                         } else {
                             ChatItem(chatMessage = chats[index], chats[index].products, boxWidth, onProductClick = {
                                 navigateTo(MainScreenDestination.ProductDetail(mapOf(MainScreenDestination.ProductDetail.PRODUCT_ID_KEY to it)))
@@ -146,7 +133,7 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
                 }
             } else {
                 Box(modifier = Modifier.padding(scaffoldPadding).fillMaxSize()) {
-                    Text(text = "No messages", modifier = Modifier.align(Alignment.Center), style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Không có tin nhắn nào!", modifier = Modifier.align(Alignment.Center), style = MaterialTheme.typography.titleMedium)
                 }
             }
 
@@ -157,8 +144,9 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter).background(color = Color.White)) {
                 HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), thickness = 1.dp, color = Color.LightGray)
                 Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                    ChatOutlinedTextField(modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
-                        placeholder = "Some message...",
+                    ChatOutlinedTextField(
+                        modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
+                        placeholder = "Nhập tin nhắn...",
                         textState = textState,
                         onValueChange = {},
                         onMessageSent = {

@@ -46,6 +46,8 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
                 }.sortedWith(compareByDescending { WholeApp.priorityProducts.contains(it.id) })
                 val filteredList = applyFilterForProductList(searchResult, filterState)
                 setAllColorList(allProducts)
+                setAllCategoryList(allProducts)
+                setAllBrandList(allProducts)
                 reducer.sendEvent(SearchResultUiEvent.SearchForProductSuccess(searchResult, filteredList, allProducts))
             }
         }
@@ -66,6 +68,8 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
                 val searchResult = it
                 val filteredList = applyFilterForProductList(searchResult, filterState)
                 setAllColorList(allProducts)
+                setAllCategoryList(allProducts)
+                setAllBrandList(allProducts)
                 reducer.sendEvent(SearchResultUiEvent.SearchForProductSuccess(searchResult, filteredList, allProducts))
             }
         }
@@ -93,6 +97,34 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
             }
         }
         reducer.setState(reducer.state.value.copy(filterState = reducer.state.value.filterState.copy(allColorList = allColorList)))
+    }
+
+    private fun setAllCategoryList(products: List<Product>) {
+        val allCategoryList = mutableListOf<String>()
+        products.forEach { product ->
+            if (!allCategoryList.contains(product.category?.name ?: "")) {
+                allCategoryList.add(product.category?.name ?: "")
+            }
+        }
+
+        allCategoryList.distinctBy {
+            it.lowercase()
+        }
+        reducer.setState(reducer.state.value.copy(filterState = reducer.state.value.filterState.copy(allCategoryList = allCategoryList)))
+    }
+
+    private fun setAllBrandList(products: List<Product>) {
+        val allBrandList = mutableListOf<String>()
+        products.forEach { product ->
+            if (!allBrandList.contains(product.brand?.name ?: "")) {
+                allBrandList.add(product.brand?.name ?: "")
+            }
+        }
+
+        allBrandList.distinctBy {
+            it.lowercase()
+        }
+        reducer.setState(reducer.state.value.copy(filterState = reducer.state.value.filterState.copy(allBrandList = allBrandList)))
     }
 
     fun applyFilter(products: List<Product>, filterState: FilterState) {
@@ -134,7 +166,27 @@ class SearchResultViewModel(private val productRepository: ProductRepository, pr
 
         AppLogger.d("filteredPrice: $filteredPrice")
 
-        return filteredPrice
+        val filteredCategory = if (filterState.categoryFilter != null) {
+            filteredPrice.filter { product ->
+                product.category?.name?.equals(filterState.categoryFilter.category, ignoreCase = true) == true
+            }
+        } else {
+            filteredPrice
+        }
+
+        AppLogger.d("filteredCategory: $filteredCategory")
+
+        val filteredBrand = if (filterState.brandFilter != null) {
+            filteredCategory.filter { product ->
+                product.brand?.name?.equals(filterState.brandFilter.brand, ignoreCase = true) == true
+            }
+        } else {
+            filteredCategory
+        }
+
+        AppLogger.d("filteredBrand: $filteredBrand")
+
+        return filteredBrand
     }
 }
 

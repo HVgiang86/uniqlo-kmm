@@ -9,7 +9,7 @@ import com.gianghv.uniqlo.domain.OrderHistory
 
 @Immutable
 data class OrderHistoryUiState(
-    override val isLoading: Boolean, override val error: ErrorState?, val orderList: List<OrderHistory> = emptyList()
+    override val isLoading: Boolean, override val error: ErrorState?, val orderList: List<OrderHistory> = emptyList(), val cartCount : Int = 0
 ) : Reducer.UiState(isLoading, error) {
     companion object {
         fun initial() = OrderHistoryUiState(

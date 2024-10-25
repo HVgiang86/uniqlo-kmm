@@ -33,7 +33,7 @@ import kotlinx.datetime.LocalDate
 @Composable
 fun AppDatePicker(
     modifier: Modifier = Modifier,
-    title: String? = "SELECT DATE",
+    title: String? = "Chọn ngày",
     state: DatePickerState = rememberDatePickerState(),
     colors: DatePickerColors = DatePickerDefaults.colors(),
     onDateSelected: (LocalDate) -> Unit = {},
@@ -59,7 +59,7 @@ fun AppDatePicker(
             TextButton(onClick = {
                 openDialog.value = false
                 onDismiss()
-            }) { Text("Cancel") }
+            }) { Text("Huỷ") }
         }, shape = RoundedCornerShape(8.dp)) {
             DatePicker(modifier = Modifier.padding(16.dp), state = state, colors = colors, showModeToggle = showModeToggle, title = {
                 title?.let {
