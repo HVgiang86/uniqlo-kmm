@@ -229,7 +229,8 @@ fun ProductImagePanel(modifier: Modifier = Modifier, images: List<Image>? = empt
         val coroutineScope = rememberCoroutineScope()
 
         if ((filteredImages?.size ?: 0) > 1) {
-            ProductImagePagerIndicator(modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
+            ProductImagePagerIndicator(
+                modifier = Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
                 pagerState = pagerState,
                 onClickIndicator = { index ->
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
@@ -367,12 +368,14 @@ fun ProductInfoPanel(
         }) {
             Column {
                 Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                    Text("Màu sắc, kích thuớc", style = MaterialTheme.typography.titleSmall, color = Color.Black, modifier = Modifier.align(Alignment.CenterStart))
                     Text(
-                        "Bấm chọn",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
-                        modifier = Modifier.align(Alignment.CenterEnd)
+                        "Màu sắc, kích thuớc",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+                    Text(
+                        "Bấm chọn", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, modifier = Modifier.align(Alignment.CenterEnd)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))

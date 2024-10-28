@@ -5,7 +5,6 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.CartRepository
-import com.gianghv.uniqlo.data.FakeData
 import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp

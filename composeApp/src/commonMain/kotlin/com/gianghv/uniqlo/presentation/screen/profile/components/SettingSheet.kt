@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,16 +30,18 @@ import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberModalBottomSheetState
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
+import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingBottomSheet(
-    state: ModalBottomSheetState? = null,
-    onChangeRecommendationServer: (String) -> Unit,
-    onChangeChatServer: (String) -> Unit
+    state: ModalBottomSheetState? = null, onChangeRecommendationServer: (String) -> Unit, onChangeChatServer: (String) -> Unit
 ) {
     val show = state ?: rememberModalBottomSheetState(
         initialDetent = FullyExpanded, detents = listOf(Hidden, FullyExpanded)
     )
+
+    val scope = rememberCoroutineScope()
 
 
     ModalBottomSheet(state = show) {
@@ -92,6 +95,16 @@ fun SettingBottomSheet(
                     },
                     textStyle = MaterialTheme.typography.bodySmall
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                RedFilledTextButton(onClick = {
+                    scope.launch {
+                        state?.animateTo(Hidden)
+                    }
+                }, text = {
+                    Text("Save", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                })
 
                 Spacer(modifier = Modifier.height(32.dp))
             }

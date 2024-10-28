@@ -5,14 +5,17 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.AppRepository
+import com.gianghv.uniqlo.data.CartRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(private val userRepository: UserRepository, private val appRepository: AppRepository) : BaseViewModel<ProfileUiState, ProfileUiEvent>() {
+class ProfileViewModel(private val userRepository: UserRepository, private val appRepository: AppRepository, private val cartRepository: CartRepository) :
+    BaseViewModel<ProfileUiState, ProfileUiEvent>() {
     override val state: StateFlow<ProfileUiState>
         get() = reducer.state
     override val reducer: Reducer<ProfileUiState, ProfileUiEvent>
@@ -58,6 +61,16 @@ class ProfileViewModel(private val userRepository: UserRepository, private val a
             appRepository.setChatUrl(url)
         }
     }
+
+    fun loadOrderHistory(userId: Long) {
+        val handler = CoroutineExceptionHandler { coroutineContext, throwable -> }
+
+        uiStateHolderScope(Dispatchers.IO).launch(handler) {
+            cartRepository.getOrderHistory(userId).collect {
+                reducer.sendEvent(ProfileUiEvent.LoadOrdersHistorySuccess(it))
+            }
+        }
+    }
 }
 
 
@@ -92,6 +105,14 @@ class ProfileReducer(initialUiState: ProfileUiState, private val viewModel: Prof
 
             is ProfileUiEvent.ChangeRecommendationServer -> {
                 viewModel.changeRecommendationServer(event.url)
+            }
+
+            is ProfileUiEvent.LoadOrdersHistory -> {
+                viewModel.loadOrderHistory(event.userId)
+            }
+
+            is ProfileUiEvent.LoadOrdersHistorySuccess -> {
+                setState(oldState.copy(error = null, orders = event.orders))
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.gianghv.uniqlo.presentation.screen.profile
 
 import com.gianghv.uniqlo.base.Reducer
+import com.gianghv.uniqlo.domain.OrderHistory
 import com.gianghv.uniqlo.domain.User
 
 sealed class ProfileUiEvent : Reducer.UiEvent {
@@ -11,4 +12,6 @@ sealed class ProfileUiEvent : Reducer.UiEvent {
     data object LogoutSuccess : ProfileUiEvent()
     data class ChangeRecommendationServer(val url: String) : ProfileUiEvent()
     data class ChangeChatServer(val url: String) : ProfileUiEvent()
+    data class LoadOrdersHistory(val userId: Long) : ProfileUiEvent()
+    data class LoadOrdersHistorySuccess(val orders: List<OrderHistory>) : ProfileUiEvent()
 }
