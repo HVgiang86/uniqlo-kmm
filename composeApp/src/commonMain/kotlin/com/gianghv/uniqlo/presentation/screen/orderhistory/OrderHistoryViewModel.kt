@@ -5,13 +5,15 @@ import com.gianghv.uniqlo.base.ErrorState
 import com.gianghv.uniqlo.base.Reducer
 import com.gianghv.uniqlo.base.uiStateHolderScope
 import com.gianghv.uniqlo.data.CartRepository
+import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.WholeApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class OrderHistoryViewModel(private val cartRepository: CartRepository) : BaseViewModel<OrderHistoryUiState, OrderHistoryUiEvent>() {
+class OrderHistoryViewModel(private val cartRepository: CartRepository, val productRepository: ProductRepository) :
+    BaseViewModel<OrderHistoryUiState, OrderHistoryUiEvent>() {
     override val state: StateFlow<OrderHistoryUiState>
         get() = reducer.state
     override val reducer: Reducer<OrderHistoryUiState, OrderHistoryUiEvent>
@@ -53,6 +55,14 @@ class OrderHistoryViewModel(private val cartRepository: CartRepository) : BaseVi
         }
     }
 
+    fun createProductEvaluation(productId: Long, userId: Long, star: Double, content: String) {
+        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+            productRepository.postProductEvaluation(productId = productId, userId = userId, star = star, content = content).collect {
+                sendEvent(OrderHistoryUiEvent.CreateProductEvaluationSuccess)
+            }
+        }
+    }
+
 }
 
 class OrderHistoryReducer(initialVal: OrderHistoryUiState, private val viewModel: OrderHistoryViewModel) :
@@ -88,6 +98,15 @@ class OrderHistoryReducer(initialVal: OrderHistoryUiState, private val viewModel
             is OrderHistoryUiEvent.CancelOrderSuccess -> {
                 setState(oldState.copy(isLoading = false, error = null))
                 viewModel.getOrderHistory()
+            }
+
+            is OrderHistoryUiEvent.CreateProductEvaluation -> {
+                setState(oldState.copy(isLoading = true, error = null))
+                viewModel.createProductEvaluation(event.productId, event.userId, event.star, event.content)
+            }
+
+            OrderHistoryUiEvent.CreateProductEvaluationSuccess -> {
+                setState(oldState.copy(isLoading = false, error = null))
             }
         }
     }

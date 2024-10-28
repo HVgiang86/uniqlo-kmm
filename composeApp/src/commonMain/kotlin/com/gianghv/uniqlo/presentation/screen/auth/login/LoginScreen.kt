@@ -27,12 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.gianghv.uniqlo.presentation.component.AppErrorDialog
 import com.gianghv.uniqlo.presentation.component.AppOutlinedTextField
 import com.gianghv.uniqlo.presentation.component.AppPasswordField
 import com.gianghv.uniqlo.presentation.component.BaseOutlinedButton
 import com.gianghv.uniqlo.presentation.component.BlackButtonIconEnd
 import com.gianghv.uniqlo.presentation.component.InputWrapper
 import com.gianghv.uniqlo.presentation.component.LoadingDialog
+import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.screen.auth.AuthEvent
 import com.gianghv.uniqlo.presentation.screen.auth.AuthViewModel
 import com.gianghv.uniqlo.util.asState
@@ -96,7 +98,7 @@ fun LoginScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.co
 
                 Spacer(Modifier.height(32.dp))
 
-                BlackButtonIconEnd(modifier = Modifier.fillMaxWidth().height(52.dp), onClick = {
+                BlackButtonIconEnd(modifier = Modifier.fillMaxWidth().height(52.dp).padding(bottom = 8.dp), onClick = {
                     // do login
                     viewModel.login(email.value, password.value)
                 }, text = {
@@ -115,6 +117,7 @@ fun LoginScreenContent(modifier: Modifier = Modifier.background(MaterialTheme.co
                 Spacer(Modifier.height(24.dp))
 
                 BaseOutlinedButton(onClick = {
+                    //validate
                     // do sign up navigate
                     viewModel.reducer.sendEvent(AuthEvent.DisplaySignUp)
                 }, text = {

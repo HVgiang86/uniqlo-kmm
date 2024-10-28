@@ -11,4 +11,6 @@ sealed class OrderHistoryUiEvent : Reducer.UiEvent {
     data class LoadCartCountSuccess(val count: Int) : OrderHistoryUiEvent()
     data class CancelOrder(val orderId: Long) : OrderHistoryUiEvent()
     data class CancelOrderSuccess(val orderId: Long) : OrderHistoryUiEvent()
+    data class CreateProductEvaluation(val productId: Long, val userId: Long, val star: Double, val content: String) : OrderHistoryUiEvent()
+    data object CreateProductEvaluationSuccess : OrderHistoryUiEvent()
 }

@@ -9,6 +9,7 @@ import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.UserRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.Product
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +50,11 @@ class HomeViewModel(private val productRepository: ProductRepository, private va
     }
 
     fun getRecommendProduct() {
-        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+        val myExceptionHandler = CoroutineExceptionHandler { _, _ ->
+        }
+
+
+        uiStateHolderScope(Dispatchers.IO).launch(myExceptionHandler) {
             productRepository.getAllProduct().combine(productRepository.getUserRecommendProduct(WholeApp.USER_ID)) { products, recommendList ->
                 products.filter { product ->
                     recommendList.contains(product.id)
@@ -102,7 +107,7 @@ class HomeReducer(initialVal: HomeUiState, private val viewModel: HomeViewModel)
             }
 
             HomeUiEvent.LoadRecommendProduct -> {
-                setState(oldState.copy(isLoading = true, error = null))
+                setState(oldState.copy(isLoading = false, error = null))
                 viewModel.getRecommendProduct()
             }
 

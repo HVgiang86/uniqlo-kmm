@@ -13,6 +13,7 @@ sealed class AiChatUiEvent : Reducer.UiEvent{
     data class ShowChatSuggestions(val suggestions: List<String>) : AiChatUiEvent()
     data object HideChatSuggestions : AiChatUiEvent()
     data class LoadChatMessagesSuccess(val chatMessages: List<ChatMessage>) : AiChatUiEvent()
+    data object LoadChatMessagesError : AiChatUiEvent()
     data class SendMessage(val message: String) : AiChatUiEvent()
     data class MessageSent(val chatMessage: ChatMessage) : AiChatUiEvent()
     data class MessageReceived(val chatMessage: ChatMessage) : AiChatUiEvent()

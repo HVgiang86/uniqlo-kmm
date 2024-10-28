@@ -12,7 +12,8 @@ data class AiChatUiState(
     override val error: ErrorState?,
     val chatMessages: List<ChatMessage> = emptyList(),
     val chatSuggestions: List<String> = emptyList(),
-    val isServerTyping: Boolean = false
+    val isServerTyping: Boolean = false,
+    val serverError: Boolean = false,
 ) : Reducer.UiState(isLoading, error) {
     companion object {
         fun initial() = AiChatUiState(

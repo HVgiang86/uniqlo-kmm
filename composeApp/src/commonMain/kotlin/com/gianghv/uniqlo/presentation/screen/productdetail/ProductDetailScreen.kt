@@ -114,9 +114,6 @@ fun ProductDetailScreen(viewModel: ProductDetailViewModel, productId: Long?, onB
     }
 
     if (state.error != null) {
-        scope.launch {
-            addCartBottomSheetState.animateTo(Hidden)
-        }
         AppErrorDialog(state.error?.throwable, onDismissRequest = {})
     }
 

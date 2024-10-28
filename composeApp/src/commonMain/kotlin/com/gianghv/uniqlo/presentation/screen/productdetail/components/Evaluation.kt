@@ -95,6 +95,9 @@ fun EvaluationRating(modifier: Modifier = Modifier, evaluation: Evaluation) {
 
 @Composable
 fun EvaluationContent(modifier: Modifier = Modifier, evaluation: Evaluation) {
+    if (evaluation.content.isEmpty())
+        return
+
     Text(
         modifier = modifier.fillMaxWidth(),
         text = evaluation.content,

@@ -7,7 +7,7 @@ enum class OrderStatus {
 fun String.toOrderStatus(): OrderStatus {
     return when (this) {
         "pending" -> OrderStatus.PENDING
-        "accepted" -> OrderStatus.ACCEPTED
+        "accept" -> OrderStatus.ACCEPTED
         "user_deny" -> OrderStatus.USER_DENY
         "admin_deny" -> OrderStatus.ADMIN_DENY
         else -> OrderStatus.OTHER

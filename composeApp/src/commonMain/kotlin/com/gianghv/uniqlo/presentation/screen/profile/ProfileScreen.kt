@@ -18,11 +18,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
 import com.composables.core.SheetDetent.Companion.FullyExpanded
 import com.composables.core.SheetDetent.Companion.Hidden
 import com.composables.core.rememberDialogState
@@ -98,6 +103,9 @@ fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestinatio
             }
         })
     }) {
+        var boxWidth by remember { mutableStateOf(0.dp) }
+        var boxHeight by remember { mutableStateOf(0.dp) }
+        val density = LocalDensity.current
         Box(modifier = Modifier.fillMaxSize().padding(it)) {
             Text(text = "Profile id = ${state.user?.id}", modifier = Modifier.align(Alignment.Center))
         }
@@ -108,5 +116,4 @@ fun ProfileScreen(viewModel: ProfileViewModel, navigateTo: (MainScreenDestinatio
             viewModel.sendEvent(ProfileUiEvent.ChangeChatServer(it))
         })
     }
-
 }

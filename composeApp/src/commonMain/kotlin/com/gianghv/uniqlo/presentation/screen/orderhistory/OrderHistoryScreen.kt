@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +45,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composables.core.SheetDetent.Companion.FullyExpanded
+import com.composables.core.SheetDetent.Companion.Hidden
+import com.composables.core.rememberModalBottomSheetState
 import com.gianghv.uniqlo.domain.OrderDetail
 import com.gianghv.uniqlo.domain.OrderHistory
 import com.gianghv.uniqlo.presentation.component.AppErrorDialog
@@ -55,10 +57,11 @@ import com.gianghv.uniqlo.presentation.component.MyAlertDialog
 import com.gianghv.uniqlo.presentation.component.RedFilledTextButton
 import com.gianghv.uniqlo.presentation.screen.main.navigation.MainScreenDestination
 import com.gianghv.uniqlo.presentation.screen.order.PaymentMethod
+import com.gianghv.uniqlo.presentation.screen.orderhistory.components.EvaluationCreateBottomSheet
 import com.gianghv.uniqlo.presentation.screen.wishlist.ProductImage
 import com.gianghv.uniqlo.util.asState
 import com.gianghv.uniqlo.util.ext.toCurrencyText
-import com.gianghv.uniqlo.util.logging.AppLogger
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.vectorResource
 import uniqlo.composeapp.generated.resources.Res
 import uniqlo.composeapp.generated.resources.ic_cart
@@ -67,6 +70,16 @@ import uniqlo.composeapp.generated.resources.ic_cart
 @Composable
 fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreenDestination) -> Unit) {
     val state by viewModel.state.asState()
+
+    val scope = rememberCoroutineScope()
+
+    val createEvaluationBottomSheetState = rememberModalBottomSheetState(
+        initialDetent = Hidden, detents = listOf(Hidden, FullyExpanded)
+    )
+
+    val orderToEvaluation = remember {
+        mutableStateOf<OrderHistory?>(null)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.sendEvent(OrderHistoryUiEvent.LoadOrderHistory)
@@ -118,11 +131,14 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
         val orders = state.orderList
 
         var boxWidth by remember { mutableStateOf(0.dp) }
+        var boxHeight by remember { mutableStateOf(0.dp) }
         val density = LocalDensity.current
 
         Box(modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding(), bottom = 80.dp).onGloballyPositioned { layoutCoordinates ->
             val widthInPx = layoutCoordinates.size.width
             boxWidth = with(density) { widthInPx.toDp() }
+            val heightInPx = layoutCoordinates.size.height
+            boxHeight = with(density) { heightInPx.toDp() }
         }) {
             LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
                 items(orders) { order ->
@@ -142,33 +158,46 @@ fun OrderHistoryScreen(viewModel: OrderHistoryViewModel, navigateTo: (MainScreen
                                     )
                                 )
                             )
+                        },
+                        onEvaluationClick = {
+                            scope.launch {
+                                createEvaluationBottomSheetState.animateTo(FullyExpanded)
+                                orderToEvaluation.value = it
+                            }
                         })
                 }
+            }
+
+            val order1 = orderToEvaluation.value
+            if (order1 != null) {
+                EvaluationCreateBottomSheet(state = createEvaluationBottomSheetState,
+                    order = order1,
+                    screenHeight = boxHeight,
+                    screenWidth = boxWidth,
+                    onCreateEvaluation = { productId: Long, star: Double, content: String ->
+                        viewModel.sendEvent(OrderHistoryUiEvent.CreateProductEvaluation(productId, productId, star, content))
+                        scope.launch {
+                            createEvaluationBottomSheetState.animateTo(Hidden)
+                        }
+                        orderToEvaluation.value = null
+                    })
             }
         }
 
         if (showPopupConfirmCancel != null) {
             val orderId = showPopupConfirmCancel
-            MyAlertDialog(
-                title = "Huỷ đơn hàng",
-                content = "Bạn có chắc chắn muốn huỷ đơn hàng này không?",
-                onCanceled = {
-                    showPopupConfirmCancel = null
-                },
-                leftBtn = {
-                    viewModel.sendEvent(OrderHistoryUiEvent.CancelOrder(orderId ?: 0))
-                    showPopupConfirmCancel = null
-                },
-                leftBtnTitle = "OK",
-                rightBtn = {
-                    showPopupConfirmCancel = null
-                },
-                rightBtnTitle = "Huỷ"
+            MyAlertDialog(title = "Huỷ đơn hàng", content = "Bạn có chắc chắn muốn huỷ đơn hàng này không?", onCanceled = {
+                showPopupConfirmCancel = null
+            }, leftBtn = {
+                viewModel.sendEvent(OrderHistoryUiEvent.CancelOrder(orderId ?: 0))
+                showPopupConfirmCancel = null
+            }, leftBtnTitle = "OK", rightBtn = {
+                showPopupConfirmCancel = null
+            }, rightBtnTitle = "Huỷ"
             )
         }
     }
 }
-
 
 @Composable
 fun OrderHistoryItem(
@@ -177,7 +206,8 @@ fun OrderHistoryItem(
     onClick: (OrderHistory) -> Unit,
     boxWidth: Dp,
     onPayNowClick: (OrderHistory) -> Unit = {},
-    onCancelClick: (OrderHistory) -> Unit = {}
+    onCancelClick: (OrderHistory) -> Unit = {},
+    onEvaluationClick: (OrderHistory) -> Unit = {}
 ) {
     Card(
         modifier = modifier.wrapContentHeight().fillMaxWidth(),
@@ -232,6 +262,13 @@ fun OrderHistoryItem(
                 if (order.status == "pending" && order.pay == true) {
                     PayNowButton(onClick = { onPayNowClick(order) }, boxWidth = boxWidth, modifier = Modifier.align(Alignment.CenterEnd))
                 }
+
+                if (order.status == "accept") {
+                    EvaluationButton(onClick = {
+                        onEvaluationClick(order)
+                    }, boxWidth = boxWidth, modifier = Modifier.align(Alignment.CenterEnd))
+                }
+
             }
 
             if ((order.status == "pending" && order.pay == true) || (order.status in listOf("pending", "accept") && order.pay == false)) {
@@ -246,12 +283,23 @@ fun OrderHistoryItem(
 }
 
 @Composable
+fun EvaluationButton(modifier: Modifier = Modifier, onClick: () -> Unit, boxWidth: Dp) {
+    RedFilledTextButton(
+        onClick = onClick,
+        modifier = modifier.width(boxWidth * 0.4f).wrapContentHeight().padding(8.dp),
+        text = {
+            Text(text = "Đánh giá", style = MaterialTheme.typography.titleSmall, color = Color.White)
+        },
+    )
+}
+
+@Composable
 fun PayNowButton(modifier: Modifier = Modifier, onClick: () -> Unit, boxWidth: Dp) {
     RedFilledTextButton(
         onClick = onClick,
         modifier = modifier.width(boxWidth * 0.4f).wrapContentHeight().padding(8.dp),
         text = {
-            Text(text = "Pay Now", style = MaterialTheme.typography.titleSmall, color = Color.White)
+            Text(text = "Thanh toán", style = MaterialTheme.typography.titleSmall, color = Color.White)
         },
     )
 }
@@ -262,7 +310,7 @@ fun CancelOrderButton(modifier: Modifier = Modifier, onClick: () -> Unit, boxWid
         onClick = onClick,
         modifier = modifier.width(boxWidth * 0.4f).wrapContentHeight().padding(8.dp),
         text = {
-            Text(text = "Cancel", style = MaterialTheme.typography.titleSmall, color = Color.White)
+            Text(text = "Huỷ đơn", style = MaterialTheme.typography.titleSmall, color = Color.White)
         },
     )
 }

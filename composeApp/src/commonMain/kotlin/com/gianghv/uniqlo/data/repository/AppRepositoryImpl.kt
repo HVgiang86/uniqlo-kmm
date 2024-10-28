@@ -18,7 +18,6 @@ class AppRepositoryImpl(private val userPreferences: UserPreferences) : AppRepos
     override suspend fun isLoggedIn(): Boolean = userPreferences.getBoolean(KEY_IS_LOGIN)
     override suspend fun setLoggedIn(isLoggedIn: Boolean) = userPreferences.putBoolean(KEY_IS_LOGIN, isLoggedIn)
     override suspend fun getUserId(): Long? {
-        AppLogger.d("hehe")
         val string = userPreferences.getString(UserPreferences.KEY_USER_ID)
         if (string.isNullOrEmpty()) return null
         return string.toLong()

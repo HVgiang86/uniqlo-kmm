@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ProductDetailViewModel(
@@ -51,10 +52,10 @@ class ProductDetailViewModel(
         uiStateHolderScope(Dispatchers.IO).launch(getProductExceptionHandler) {
             productRepository.getProductDetail(productId).combine(userRepository.getWishlist(WholeApp.USER_ID)) { product, wishlist ->
                 product.copy(isFavorite = wishlist.contains(product.id))
+            }.combine(productRepository.getProductEvaluation(productId)) { product, evaluations ->
+                product.copy(evaluations = evaluations)
             }.collect {
-                reducer.sendEvent(
-                    ProductDetailUiEvent.LoadProductSuccess(it.copy(evaluations = FakeData.evaluations))
-                )
+                reducer.sendEvent(ProductDetailUiEvent.LoadProductSuccess(it))
             }
         }
     }
@@ -82,7 +83,9 @@ class ProductDetailViewModel(
     }
 
     fun getRecommendedProducts(productId: Long) {
-        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+        val myExceptionHandler = CoroutineExceptionHandler { _, _ ->
+        }
+        uiStateHolderScope(Dispatchers.IO).launch(myExceptionHandler) {
             productRepository.getAllProduct().combine(productRepository.getSimilarProduct(productId)) { products, similarProducts ->
                 products.filter { product ->
                     similarProducts.contains(product.id)
@@ -171,7 +174,7 @@ class ProductDetailReducer(initialVal: ProductDetailUiState, private val viewMod
             }
 
             is ProductDetailUiEvent.LoadRecommendedProduct -> {
-                setState(oldState.copy(isLoading = true, error = null))
+                setState(oldState.copy(isLoading = false, error = null))
                 viewModel.getRecommendedProducts(event.productId)
             }
 

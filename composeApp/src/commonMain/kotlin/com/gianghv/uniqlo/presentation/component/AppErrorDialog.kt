@@ -21,7 +21,9 @@ fun AppErrorDialog(throwable: Throwable?, onDismissRequest: () -> Unit) {
         else -> "Unknown error!"
     }
 
-    MyAlertDialog(title = "Thông báo", content = message, rightBtnTitle = "OK", rightBtn = {
-        onDismissRequest()
-    })
+    if (throwable != null) {
+        MyAlertDialog(title = "Thông báo", content = message, rightBtnTitle = "OK", rightBtn = {
+            onDismissRequest()
+        })
+    }
 }

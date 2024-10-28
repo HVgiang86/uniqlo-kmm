@@ -3,6 +3,7 @@ package com.gianghv.uniqlo.presentation.screen.aichat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -141,31 +144,39 @@ fun AIChatScreen(viewModel: AiChatViewModel, navigateTo: (MainScreenDestination)
                 mutableStateOf(TextFieldValue())
             }
 
-            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter).background(color = Color.White)) {
-                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), thickness = 1.dp, color = Color.LightGray)
-                Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                    ChatOutlinedTextField(
-                        modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
-                        placeholder = "Nhập tin nhắn...",
-                        textState = textState,
-                        onValueChange = {},
-                        onMessageSent = {
-                            viewModel.sendEvent(AiChatUiEvent.SendMessage(it))
-                            textState.value = TextFieldValue("")
-                        },
-                        imeAction = ImeAction.Send,
-                        shape = RoundedCornerShape(24.dp)
-                    )
+            if (!state.serverError) {
+                TypePanel(textState = textState, viewModel = viewModel, keyboardController = keyboardController)
+            }
 
-                    IconButton(modifier = Modifier.size(46.dp).padding(end = 8.dp).align(Alignment.CenterEnd), onClick = {
-                        viewModel.sendEvent(AiChatUiEvent.SendMessage(textState.value.text))
-                        textState.value = TextFieldValue("")
-                        keyboardController?.hide()
-                    }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                    }
+        }
+    }
+}
 
-                }
+
+@Composable
+fun BoxScope.TypePanel(textState: MutableState<TextFieldValue>, viewModel: AiChatViewModel, keyboardController: SoftwareKeyboardController?) {
+    Column(modifier = Modifier.fillMaxWidth().wrapContentHeight().align(Alignment.BottomCenter).background(color = Color.White)) {
+        HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), thickness = 1.dp, color = Color.LightGray)
+        Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+            ChatOutlinedTextField(
+                modifier = Modifier.height(52.dp).fillMaxWidth().padding(start = 8.dp, end = 24.dp),
+                placeholder = "Nhập tin nhắn...",
+                textState = textState,
+                onValueChange = {},
+                onMessageSent = {
+                    viewModel.sendEvent(AiChatUiEvent.SendMessage(it))
+                    textState.value = TextFieldValue("")
+                },
+                imeAction = ImeAction.Send,
+                shape = RoundedCornerShape(24.dp)
+            )
+
+            IconButton(modifier = Modifier.size(46.dp).padding(end = 8.dp).align(Alignment.CenterEnd), onClick = {
+                viewModel.sendEvent(AiChatUiEvent.SendMessage(textState.value.text))
+                textState.value = TextFieldValue("")
+                keyboardController?.hide()
+            }) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
             }
 
         }

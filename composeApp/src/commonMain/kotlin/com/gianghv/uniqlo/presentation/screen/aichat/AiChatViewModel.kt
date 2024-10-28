@@ -9,6 +9,7 @@ import com.gianghv.uniqlo.data.ProductRepository
 import com.gianghv.uniqlo.data.WholeApp
 import com.gianghv.uniqlo.domain.ChatMessage
 import com.gianghv.uniqlo.util.logging.AppLogger
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,11 @@ class AiChatViewModel(private val chatRepository: ChatRepository, private val pr
         }
 
     fun loadChatMessages() {
-        uiStateHolderScope(Dispatchers.IO).launch(exceptionHandler) {
+        val handler = CoroutineExceptionHandler { _, throwable ->
+            reducer.sendEvent(AiChatUiEvent.LoadChatMessagesError)
+        }
+
+        uiStateHolderScope(Dispatchers.IO).launch(handler) {
             chatRepository.getAllMessages(WholeApp.USER_ID).collect {
                 reducer.sendEvent(AiChatUiEvent.LoadChatMessagesSuccess(it))
             }
@@ -111,6 +116,10 @@ class ChatReducer(initialVal: AiChatUiState, private val viewModel: AiChatViewMo
                 }
                 val newState = oldState.copy(chatMessages = updatedMessages)
                 setState(newState)
+            }
+
+            AiChatUiEvent.LoadChatMessagesError -> {
+                setState(oldState.copy(isLoading = false, isServerTyping = false, error = null, serverError = true))
             }
         }
     }
